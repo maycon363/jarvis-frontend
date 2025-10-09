@@ -1,7 +1,7 @@
 import './App.css';
 import Chat from './components/Chat';
 import { useEffect, useState } from 'react';
-import bgVideo from './assets/jarvis-bg.mp4.mp4';
+import bgVideo from './assets/jarvis-bg.mp4';
 
 
 function App() {
