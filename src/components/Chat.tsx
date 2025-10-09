@@ -188,7 +188,7 @@ export default function Chat() {
     setInput('');
 
     try {
-      const response = await axios.post('https://jarvis-backend-6xuu.onrender.com/api/chat', {
+      const response = await axios.post('https://jarvis-backend-6xuu.onrender.com', {
         message: userMessage,
         sessionId, // envia o id da sessão
       });
