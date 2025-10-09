@@ -149,7 +149,7 @@ export default function Chat() {
     setMessages(prev => [...prev, { sender: 'user', text: spokenText }]);
 
     try {
-      const response = await axios.post('http://localhost:3001/api/chat', {
+      const response = await axios.post('https://jarvis-backend-6xuu.onrender.com', {
         message: spokenText,
         sessionId, // envia o id da sessão
       });
@@ -188,7 +188,7 @@ export default function Chat() {
     setInput('');
 
     try {
-      const response = await axios.post('http://localhost:3001/api/chat', {
+      const response = await axios.post('https://jarvis-backend-6xuu.onrender.com/api/chat', {
         message: userMessage,
         sessionId, // envia o id da sessão
       });
