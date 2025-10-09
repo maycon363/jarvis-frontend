@@ -246,7 +246,7 @@ export default function Chat() {
         <div className="chat-side">
           <div className="chat-window">
             {messages.map((msg, idx) => (
-              <div key={idx} className={`message ${msg.sender}`}>
+              <div key={idx} className={`message ${msg.sender === 'jarvis' ? 'jarvis' : 'user'}`}>
                 <strong>{msg.sender === 'jarvis' ? 'JARVIS' : 'VOCÊ'}:</strong> {msg.text}
               </div>
             ))}
@@ -266,22 +266,10 @@ export default function Chat() {
             </button>
             <button
               onClick={startRecognition}
-              style={{
-                background: recognizing ? '#ff004f' : '#00fff7',
-              }}
+              className={`mic-button ${recognizing ? 'active' : ''}`}
+              aria-pressed={recognizing}
             >
               🎙️
-            </button>
-            <button
-              onClick={() => {
-                shouldContinueListeningRef.current = false;
-                recognitionRef.current?.stop();
-                setRecognizing(false);
-              }}
-              disabled={!recognizing}
-              style={{ background: '#fcdd2cc2' }}
-            >
-              ⏹️ Parar
             </button>
           </div>
         </div>

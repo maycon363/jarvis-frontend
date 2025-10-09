@@ -16,8 +16,6 @@ export function IronManModel({ speaking }: Props) {
     const { scene } = useGLTF(glbPath);
     const eyeLightRef = useRef<THREE.PointLight>(null);
 
-
-
     useEffect(() => {
         const time = performance.now() * 0.005;
         const pulse = (Math.sin(time * 4) + 1) / 2; // pulso oscilando entre 0 e 1
