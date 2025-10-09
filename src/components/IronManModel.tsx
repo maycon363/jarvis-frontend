@@ -12,7 +12,8 @@ interface Props {
 
 export function IronManModel({ speaking }: Props) {
 
-    const { scene } = useGLTF('/assets/ironman_mark85.glb');
+    const glbPath = new URL('/assets/ironman_mark85.glb', import.meta.url).href;
+    const { scene } = useGLTF(glbPath);
     const eyeLightRef = useRef<THREE.PointLight>(null);
 
 
