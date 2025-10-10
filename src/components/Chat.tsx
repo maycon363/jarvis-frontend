@@ -24,11 +24,21 @@ export default function Chat() {
     const loadVoices = () => {
       const vs = window.speechSynthesis.getVoices();
       setVoices(vs);
+      console.table(
+        vs.map(v => ({
+          name: v.name,
+          lang: v.lang,
+          genderGuess: v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('homem') ? 'Masculina' : 'Feminina',
+        }))
+      );
     };
-    loadVoices();
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
     }
+
+    // Garante que carrega mesmo se não mudar
+    loadVoices();
   }, []);
 
   // Função de fala
