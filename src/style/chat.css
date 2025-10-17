@@ -1,11 +1,17 @@
 /* ===========================
-   JARVIS Chat - Estilo Unificado
+   JARVIS arquivo  > Chat.css - Estilo Unificado
    =========================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
 
 :root {
   --safe-height: 100dvh;
+}
+
+@supports not (height: 100dvh) {
+  :root {
+    --safe-height: 100vh;
+  }
 }
 
 /* Reset global */
@@ -17,15 +23,23 @@
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   height: var(--safe-height);
   background: linear-gradient(135deg, #0b0c10 0%, #12151a 100%);
-  min-height: 100vh; /* ✅ garante que o corpo possa crescer */
+  min-height: 100vh;
   overflow-x: hidden;
   color: #00fff7;
   font-family: 'Orbitron', sans-serif;
   user-select: none;
+  width: 100%;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* Container principal */
@@ -33,7 +47,6 @@ body {
   display: flex;
   flex-direction: column;
   height: var(--safe-height);
-  padding: 9px;
   background: radial-gradient(circle at center, rgba(0, 255, 247, 0.1), transparent 90%);
   box-sizing: border-box;
   overflow: visible;
@@ -43,33 +56,29 @@ body {
 .layout-wrapper {
   display: flex;
   flex-direction: row;
-  gap: 20px;
+  gap: clamp(10px, 2vw, 20px);
   height: 100%;
-  flex-wrap: nowrap;
-  overflow: visible;
+  overflow: hidden;
+  max-width: 100%;
+  padding: clamp(8px, 2vw, 20px);
 }
 
 /* Lado do modelo (Iron Man) */
 .model-side {
-  flex: 1;
-  padding: 3px;
+  flex: 1 1 50%;
   display: flex;
-  justify-content: center;
+  flex-direction: row;
+  max-width: 650px;
   align-items: center;
-
-  /* ✅ Limites suaves e responsivos */
-  max-width: 70vw;
-  max-height: 100vh;
-
-  /* ✅ Não corta conteúdo à força */
-  overflow: visible;
+  max-height: 100%;
+  overflow: auto;
 }
 
 /* Lado do chat */
 .chat-side {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
   min-height: 0;
 }
 
@@ -81,8 +90,10 @@ body {
   overflow-y: auto;
   scroll-behavior: smooth;
   display: flex;
-  flex-direction: column; /* 👈 mantém as mensagens em ordem normal (de cima pra baixo) */
-  justify-content: flex-start; /* garante crescimento pra baixo */
+  flex-direction: column;
+  /* 👈 mantém as mensagens em ordem normal (de cima pra baixo) */
+  justify-content: flex-start;
+  /* garante crescimento pra baixo */
   background: rgba(0, 255, 255, 0.08);
   border: 1.5px solid #00fff7;
   border-radius: 12px;
@@ -194,8 +205,13 @@ button:disabled {
 
 /* Animações */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUpFadeIn {
@@ -203,6 +219,7 @@ button:disabled {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -218,7 +235,9 @@ button:disabled {
     flex-direction: column;
     align-items: center;
   }
-  .model-side, .chat-side {
+
+  .model-side,
+  .chat-side {
     width: 100%;
   }
 }
@@ -226,6 +245,7 @@ button:disabled {
 @media (max-width: 768px) {
   .layout-wrapper {
     flex-direction: column;
+    flex-wrap: wrap;
     gap: 10px;
   }
 
@@ -252,7 +272,8 @@ button:disabled {
     gap: 10px;
   }
 
-  input, button {
+  input,
+  button {
     width: 100%;
     font-size: 1rem;
   }
@@ -263,8 +284,112 @@ button:disabled {
     padding: 10px;
     font-size: 0.95rem;
   }
+
   .message {
     padding: 8px 12px;
     max-width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout-wrapper {
+    flex-wrap: wrap;
+    padding: 5px;
+    gap: 8px;
+  }
+
+  .model-side {
+    max-height: 200px;
+  }
+
+  .chat-window {
+    max-height: 55vh;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .message {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+  }
+
+  .input-area {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  input,
+  button {
+    font-size: 0.95rem;
+    padding: 12px;
+  }
+
+  button {
+    padding: 12px 20px;
+  }
+}
+
+input:focus {
+  scroll-margin-bottom: 100px;
+  /* Ajuda no scroll automático */
+}
+
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  html,
+  body {
+    height: 100vh; /* 🔐 força altura total disponível */
+    overflow: hidden;
+  }
+
+  .layout-wrapper {
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 3px;
+    height: 100vh; /* 🔐 ocupa a tela inteira */
+    overflow-y: hidden; /* 🔥 permite scroll se passar da altura */
+  }
+
+  .model-side {
+    max-height: 119px;
+    width: 100%;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .chat-side {
+    flex: 1;
+    min-height: 100px; /* 🔐 altura mínima */
+    display: flex; 
+    flex-direction: column;
+    box-sizing: border-box; /* ✅ ESSENCIAL */
+  }
+
+  .chat-window {
+    flex: 1;
+    overflow-y: auto; /* 🔥 permite scroll se passar da altura */
+    max-height: none;   /* 🔐 remove limite de altura */
+  }
+
+  .message {
+    max-width: 95%; /* 🔐 mais espaço pra mensagens */
+    padding: 8px 10px; /* 🔐 menos padding */
+    font-size: 0.8rem; /* 🔐 fonte menor */
+  }
+
+  .input-area {
+    flex-shrink: 0; /* 🔐 não encolhe */
+    flex-direction: column; /* 🔐 empilha vertical */
+    gap: 8px; 
+  }
+
+  input,
+  button {
+    width: 100%; /* 🔐 largura total */
+    font-size: 0.9rem; 
+    padding: 3px; 
+  }
+
+  .mic-button {
+    display: block; /* 🔐 mostra o botão de microfone */
   }
 }
