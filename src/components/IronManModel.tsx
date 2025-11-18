@@ -142,7 +142,7 @@ export function IronManModel({ speaking }: Props) {
             }}
         >
             {/* Luzes principais */}
-            <Environment preset="city" background={false} />
+            <Environment files="https://cdn.jsdelivr.net/gh/Poly-Haven/asset-metadata/HDRIs/kiara_1_dawn_2k.hdr" background={false}  />
             <ambientLight intensity={0.05} />
 
             <directionalLight position={[216, 86, 36]} intensity={0.1} castShadow />

@@ -100,9 +100,6 @@ body {
     /* Transição suave para desktop */
 }
 
-
-/* --- Menu Sidebar/Hamburguer (REGRAS BASE) --- */
-
 .layout-wrapper {
     display: flex;
     flex-direction: row;
