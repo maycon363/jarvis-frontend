@@ -1,18 +1,41 @@
+// src/App.tsx
+
 import './App.css';
-import Chat from './components/Chat';
+import Chat from './pages/Chat';
 import { useEffect, useState } from 'react';
 import bgVideo from './assets/jarvis-bg.mp4';
 
+import Menu from './components/Menu';
+import HelpModal from './components/HelpModal';
+import ConfigModal from './components/ConfigModal'; // 🟢 IMPORTADO AGORA
+
+// Tipo de modal
+type ModalType = 'Ajuda' | 'Configurações' | 'Perfil';
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Qual modal está aberto
+  const [openModal, setOpenModal] = useState<ModalType | null>(null);
+
+  // 🟢 ESTADO DO MODELO 3D
+  const [show3DModel, setShow3DModel] = useState(true);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(prev => !prev);
+  };
+
+  const handleSelectOption = (option: ModalType) => {
+    console.log("Menu option selected:", option);
+
+    setIsMenuOpen(false);
+    setOpenModal(option);
+  };
 
   useEffect(() => {
-    // Simula carregamento de 2.5 segundos
     const timeout = setTimeout(() => {
       setLoading(false);
-
-      // Fala ao iniciar
       const utterance = new SpeechSynthesisUtterance("Bem-vindo ao JARVIS");
       utterance.lang = 'pt-BR';
       utterance.rate = 0.9;
@@ -22,8 +45,26 @@ function App() {
     return () => clearTimeout(timeout);
   }, []);
 
+  // 🟢 SISTEMA DE MODAIS
+  let ActiveModal = null;
+
+  if (openModal === "Ajuda") {
+    ActiveModal = <HelpModal onClose={() => setOpenModal(null)} />;
+  }
+
+  if (openModal === "Configurações") {
+    ActiveModal = (
+      <ConfigModal
+        onClose={() => setOpenModal(null)}
+        show3DModel={show3DModel}
+        toggle3DModel={() => setShow3DModel(prev => !prev)}
+      />
+    );
+  }
+
   return (
-    <>
+    <div className="main-app-container">
+
       {loading ? (
         <div className="loading-screen">
           <video
@@ -34,17 +75,25 @@ function App() {
             muted
             playsInline
           />
-          <div className="overlay">
-            <div className="loader"></div>
-            <div className="loading-text">J.A.R.V.I.S. carregando...</div>
-          </div>
         </div>
       ) : (
-        <div>
-          <Chat />
-        </div>
+        <>
+          <Menu 
+            isOpen={isMenuOpen} 
+            toggleMenu={toggleMenu}
+            onSelectOption={handleSelectOption}
+            toggle3DModel={() => setShow3DModel(prev => !prev)}
+          />
+
+          {ActiveModal}
+          <Chat 
+            toggleMenu={toggleMenu}
+            isMenuOpen={isMenuOpen}
+            show3DModel={show3DModel}        // 🟢 PASSADO PARA O CHAT
+          />
+        </>
       )}
-    </>
+    </div>
   );
 }
 

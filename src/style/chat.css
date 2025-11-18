@@ -1,395 +1,527 @@
-/* ===========================
-   JARVIS arquivo  > Chat.css - Estilo Unificado
-   =========================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
-
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap");
 :root {
-  --safe-height: 100dvh;
+    --safe-height: 100dvh;
 }
 
 @supports not (height: 100dvh) {
-  :root {
-    --safe-height: 100vh;
-  }
+     :root {
+        --safe-height: 100vh;
+    }
 }
 
-/* Reset global */
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 html {
-  scroll-behavior: smooth;
+    scroll-behavior: smooth;
 }
 
 html,
 body {
-  height: var(--safe-height);
-  background: linear-gradient(135deg, #0b0c10 0%, #12151a 100%);
-  min-height: 100vh;
-  overflow-x: hidden;
-  color: #00fff7;
-  font-family: 'Orbitron', sans-serif;
-  user-select: none;
-  width: 100%;
-  touch-action: manipulation;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+    height: var(--safe-height);
+    background: linear-gradient(135deg, #0b0c10 0%, #12151a 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: #00fff7;
+    font-family: "Orbitron", sans-serif;
+    user-select: none;
+    width: 100%;
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
-/* Container principal */
+.lite-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    color: #ff0000;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+.lite-gif {
+  width: 280px;
+  height: auto;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 15px #00eaffe1);
+  margin-bottom: 10px;
+}
+
+.lite-placeholder p {
+    margin-top: 1rem;
+    font-size: 1.6rem;
+    opacity: 0.8;
+    border-radius: 5px 5px 5px 5px;
+    border: 4px solid #00fff7;
+    text-shadow: 0 0 8px #000000;
+    box-shadow: #000 0px 0px 12px 2px;
+    padding: 12px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+
+/* --- Container Principal da Aplicação --- */
+
+.main-app-container {
+    display: flex;
+    /* Essencial para alinhar o Menu e o Chat lado a lado */
+    height: var(--safe-height);
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+
+/* --- Container do Chat Principal (o conteúdo que se move) --- */
+
 .jarvis-container {
-  display: flex;
-  flex-direction: column;
-  height: var(--safe-height);
-  background: radial-gradient(circle at center, rgba(0, 255, 247, 0.1), transparent 90%);
-  box-sizing: border-box;
-  overflow: visible;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: var(--safe-height);
+    background: radial-gradient( circle at center, rgba(0, 255, 247, 0.1), transparent 90%);
+    box-sizing: border-box;
+    overflow: visible;
+    transition: margin-left 0.3s ease;
+    /* Transição suave para desktop */
 }
 
-/* Estrutura do layout */
+
+/* --- Menu Sidebar/Hamburguer (REGRAS BASE) --- */
+
 .layout-wrapper {
-  display: flex;
-  flex-direction: row;
-  gap: clamp(10px, 2vw, 20px);
-  height: 100%;
-  overflow: hidden;
-  max-width: 100%;
-  padding: clamp(8px, 2vw, 20px);
+    display: flex;
+    flex-direction: row;
+    gap: clamp(10px, 2vw, 20px);
+    height: 100%;
+    overflow: hidden;
+    max-width: 100%;
+    padding: clamp(8px, 2vw, 20px);
+    padding-top: clamp(60px, 8vw, 80px);
 }
 
-/* Lado do modelo (Iron Man) */
 .model-side {
-  flex: 1 1 50%;
-  display: flex;
-  flex-direction: row;
-  max-width: 650px;
-  align-items: center;
-  max-height: 100%;
-  overflow: auto;
+    flex: 1 1 50%;
+    display: flex;
+    flex-direction: row;
+    max-width: 720px;
+    align-items: center;
+    max-height: 100%;
+    overflow: auto;
 }
 
-/* Lado do chat */
 .chat-side {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    min-height: 0;
 }
 
-/* Janela de mensagens */
 .chat-window {
-  flex: 1;
-  min-height: 0;
-  max-height: 100%;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  display: flex;
-  flex-direction: column;
-  /* 👈 mantém as mensagens em ordem normal (de cima pra baixo) */
-  justify-content: flex-start;
-  /* garante crescimento pra baixo */
-  background: rgba(0, 255, 255, 0.08);
-  border: 1.5px solid #00fff7;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 0 8px #00fff7, inset 0 0 4px #00fff7;
-  backdrop-filter: blur(6px);
+    flex: 1;
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    border: 1.5px solid #00fff7;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 0 8px #00fff7, inset 0 0 4px #00fff7;
+    backdrop-filter: blur(6px);
+}
+
+.chat-window::-webkit-scrollbar {
+    width: 12px;
+}
+
+.chat-window::-webkit-scrollbar-track {
+    background: #70707e;
+    border-radius: 6px;
+}
+
+.chat-window::-webkit-scrollbar-thumb {
+    background: #00fff7;
+    border-radius: 4px;
+    border: 1px solid #000;
+    box-shadow: 0 0 4px #00fff7;
+}
+
+.chat-window::-webkit-scrollbar-thumb:hover {
+    background: #ff004f;
+    box-shadow: 0 0 6px #ff004f;
 }
 
 
 /* Mensagens */
+
 .message {
-  margin-bottom: 14px;
-  max-width: 70%;
-  line-height: 1.4;
-  font-size: 1.1rem;
-  animation: slideUpFadeIn 0.4s ease forwards;
-  padding: 10px 15px;
-  border-radius: 8px;
-  word-break: break-word;
+    margin-bottom: 6px;
+    max-width: 70%;
+    line-height: 1.4;
+    font-size: 1.1rem;
+    animation: slideUpFadeIn 0.4s ease forwards;
+    padding: 10px 15px;
+    border-radius: 8px;
+    word-break: break-word;
 }
 
 .message.jarvis {
-  color: #00fff7;
-  background: #001616;
-  border: 1px solid #00fff7;
-  text-shadow: 0 0 6px #00fff7;
-  box-shadow: 0 0 10px #00fff7;
-  align-self: flex-start;
+    color: #00fff7;
+    background: #001616;
+    border: 1px solid #00fff7;
+    text-shadow: 0 0 6px #00fff7;
+    box-shadow: 0 0 10px #00fff7;
+    align-self: flex-start;
 }
 
 .message.user {
-  color: #ff004f;
-  background: #1a0005;
-  border: 1px solid #ff004f;
-  text-shadow: 0 0 10px #ff004f;
-  box-shadow: 0 0 10px #ff004f;
-  align-self: flex-end;
-  text-align: right;
+    color: #ff004f;
+    background: #1a0005;
+    border: 1px solid #ff004f;
+    text-shadow: 0 0 10px #ff004f;
+    box-shadow: 0 0 10px #ff004f;
+    align-self: flex-end;
+    text-align: right;
 }
 
-/* Área de input */
 .input-area {
-  flex-shrink: 0;
-  display: flex;
-  padding: 10px;
-  background-color: #0b0c10;
-  gap: 10px;
+    flex-shrink: 0;
+    display: flex;
+    padding: 10px;
+    gap: 10px;
 }
 
-/* Campo de texto */
 input {
-  flex: 1;
-  padding: 14px 18px;
-  background: #12151a;
-  border: 1px solid #00fff7;
-  border-radius: 8px;
-  color: #00fff7;
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  outline: none;
-  caret-color: #ff004f;
-  box-shadow: 0 0 4px #00fff7 inset;
+    flex: 1;
+    padding: 14px 18px;
+    background: #12151a;
+    border: 1px solid #00fff7;
+    border-radius: 8px;
+    color: #00fff7;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    outline: none;
+    caret-color: #ff004f;
+    box-shadow: 0 0 4px #00fff7 inset;
 }
 
 input::placeholder {
-  color: #00fff7aa;
-  font-style: italic;
+    color: #00fff7aa;
+    font-style: italic;
 }
 
 input:focus {
-  border-color: #ff004f;
-  box-shadow: 0 0 10px #ff004f inset, 0 0 10px #ff004f;
+    border-color: #ff004f;
+    box-shadow: 0 0 10px #ff004f inset, 0 0 10px #ff004f;
 }
 
-/* Botões */
 button {
-  padding: 14px 30px;
-  background: #00fff7;
-  border: none;
-  border-radius: 10px;
-  color: #000;
-  font-weight: 700;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 0 10px #00fff7;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
+    padding: 14px 30px;
+    background: #00fff7;
+    border: none;
+    border-radius: 10px;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 0 10px #00fff7;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    height: 50px;
+    min-width: 50px;
 }
 
 button:hover:not(:disabled) {
-  background: #00c0d7;
-  box-shadow: 0 0 10px #00c0d7;
+    background: #00c0d7;
+    box-shadow: 0 0 10px #00c0d7;
 }
 
 button:disabled {
-  background: #555;
-  cursor: not-allowed;
-  box-shadow: none;
-  color: #222;
+    background: #555;
+    cursor: not-allowed;
+    box-shadow: none;
+    color: #222;
 }
 
-/* Microfone */
+.mic-button {
+    padding: 14px 14px;
+}
+
 .mic-button.active {
-  background: #ff004f;
+    background: #ff004f;
 }
 
-/* Animações */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideUpFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* ===========================
-   RESPONSIVIDADE
-   =========================== */
+
+/* --- MEDIA QUERIES --- */
+
+
+/* --- Desktop: Menu Hamburguer como Overlay (>= 1101px) --- */
+
+@media (min-width: 1101px) {
+    /* Menu sempre escondido, esperando o clique no hamburger */
+    .menu {
+        transform: translateX(-100%);
+        position: fixed;
+        width: 300px;
+        /* Pouco mais largo no desktop para estética */
+    }
+    /* O botão hamburger fica visível */
+    .hamburger-button {
+        display: flex;
+    }
+    /* O container principal ocupa 100% da largura, pois o menu é um overlay */
+    .jarvis-container {
+        margin-left: 0;
+        width: 100%;
+    }
+    /* Layout Padrão de Desktop */
+    .layout-wrapper {
+        flex-direction: row;
+        height: 100%;
+    }
+    .chat-side {
+        width: 50%;
+    }
+}
+
+
+/* --- Mobile/Tablet: Hamburguer Deslizante (<= 1100px) --- */
 
 @media (max-width: 1100px) {
-  .layout-wrapper {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .model-side,
-  .chat-side {
-    width: 100%;
-  }
+    /* O Menu desliza e fica escondido por padrão */
+    .menu {
+        transform: translateX(-100%);
+        width: 85vw;
+        /* Ocupa a maior parte da tela em mobile */
+        border-right: none;
+        box-shadow: 0 0 30px rgba(0, 255, 247, 0.8);
+    }
+    /* Quando a classe 'open' é aplicada, ele desliza para dentro */
+    .menu.open {
+        transform: translateX(0);
+    }
+    /* O botão hamburger aparece no canto superior esquerdo */
+    .hamburger-button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    /* O container principal não tem margem e ocupa a largura total */
+    .jarvis-container {
+        margin-left: 0;
+        width: 100%;
+    }
+    /* Layout Wrapper: Coloca o modelo e o chat um em cima do outro */
+    .layout-wrapper {
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+        overflow-y: auto;
+        padding-bottom: 70px;
+    }
+    .model-side {
+        width: 100%;
+        max-height: 40vh;
+        flex-shrink: 0;
+    }
+    .chat-side {
+        width: 100%;
+        flex: 1;
+        min-height: 50vh;
+    }
 }
 
 @media (max-width: 768px) {
-  .layout-wrapper {
-    flex-direction: column;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .model-side {
-    max-height: 300px;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .chat-window {
-    max-height: 60vh;
-    font-size: 1rem;
-    padding: 15px;
-  }
-
-  .message {
-    max-width: 90%;
-    font-size: 1rem;
-    padding: 10px;
-  }
-
-  .input-area {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  input,
-  button {
-    width: 100%;
-    font-size: 1rem;
-  }
+    .layout-wrapper {
+        flex-direction: column;
+        flex-wrap: wrap;
+        padding: 10px;
+        gap: 10px;
+    }
+    /* Aumentando o padding superior em mobile para evitar sobreposição */
+    .layout-wrapper {
+        padding-top: 65px;
+    }
+    .model-side {
+        max-height: 250px;
+        justify-content: center;
+        align-items: center;
+    }
+    .chat-window {
+        max-height: 65vh;
+        font-size: 1rem;
+        padding: 12px;
+    }
+    .message {
+        max-width: 90%;
+        font-size: 1rem;
+        padding: 10px;
+        max-width: 85%;
+    }
+    .input-area {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        padding: 10px;
+    }
+    input {
+        flex: 1;
+        width: 100%;
+        font-size: 1rem;
+    }
+    button {
+        flex-shrink: 0;
+        padding: 14px 18px;
+        height: 45px;
+        width: auto;
+    }
+    .mic-button {
+        width: 50px;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 }
 
 @media (max-width: 600px) {
-  .chat-window {
-    padding: 10px;
-    font-size: 0.95rem;
-  }
-
-  .message {
-    padding: 8px 12px;
-    max-width: 90%;
-  }
+    .chat-window {
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+    .message {
+        padding: 8px 12px;
+        max-width: 90%;
+    }
 }
 
 @media (max-width: 480px) {
-  .layout-wrapper {
-    flex-wrap: wrap;
-    padding: 5px;
-    gap: 8px;
-  }
-
-  .model-side {
-    max-height: 200px;
-  }
-
-  .chat-window {
-    max-height: 55vh;
-    padding: 10px;
-    font-size: 0.9rem;
-  }
-
-  .message {
-    font-size: 0.9rem;
-    padding: 6px 10px;
-  }
-
-  .input-area {
-    gap: 8px;
-    padding: 8px;
-  }
-
-  input,
-  button {
-    font-size: 0.95rem;
-    padding: 12px;
-  }
-
-  button {
-    padding: 12px 20px;
-  }
+    .layout-wrapper {
+        flex-wrap: wrap;
+        padding: 5px;
+        gap: 8px;
+        padding-top: 55px;
+        /* Ajuste para o botão fixo */
+    }
+    .model-side {
+        max-height: 200px;
+    }
+    .chat-window {
+        max-height: 48vh;
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    .message {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+    }
+    .input-area {
+        gap: 8px;
+        padding: 8px;
+    }
+    input,
+    button {
+        font-size: 0.95rem;
+        padding: 12px;
+    }
+    button {
+        padding: 12px 20px;
+    }
 }
 
 input:focus {
-  scroll-margin-bottom: 100px;
-  /* Ajuda no scroll automático */
+    scroll-margin-bottom: 100px;
 }
 
 @media screen and (orientation: landscape) and (max-height: 500px) {
-  html,
-  body {
-    height: 100vh; /* 🔐 força altura total disponível */
-    overflow: hidden;
-  }
-
-  .layout-wrapper {
-    flex-direction: column;
-    flex-wrap: wrap;
-    gap: 3px;
-    height: 100vh; /* 🔐 ocupa a tela inteira */
-    overflow-y: hidden; /* 🔥 permite scroll se passar da altura */
-  }
-
-  .model-side {
-    max-height: 119px;
-    width: 100%;
-    padding: 0;
-    flex-shrink: 0;
-  }
-
-  .chat-side {
-    flex: 1;
-    min-height: 100px; /* 🔐 altura mínima */
-    display: flex; 
-    flex-direction: column;
-    box-sizing: border-box; /* ✅ ESSENCIAL */
-  }
-
-  .chat-window {
-    flex: 1;
-    overflow-y: auto; /* 🔥 permite scroll se passar da altura */
-    max-height: none;   /* 🔐 remove limite de altura */
-  }
-
-  .message {
-    max-width: 95%; /* 🔐 mais espaço pra mensagens */
-    padding: 8px 10px; /* 🔐 menos padding */
-    font-size: 0.8rem; /* 🔐 fonte menor */
-  }
-
-  .input-area {
-    flex-shrink: 0; /* 🔐 não encolhe */
-    flex-direction: column; /* 🔐 empilha vertical */
-    gap: 8px; 
-  }
-
-  input,
-  button {
-    width: 100%; /* 🔐 largura total */
-    font-size: 0.9rem; 
-    padding: 3px; 
-  }
-
-  .mic-button {
-    display: block; /* 🔐 mostra o botão de microfone */
-  }
+    html,
+    body {
+        height: 100vh;
+        overflow: hidden;
+    }
+    .layout-wrapper {
+        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 3px;
+        height: 100vh;
+        padding-top: 55px;
+        /* Ajuste para o botão fixo */
+    }
+    .model-side {
+        max-height: 119px;
+        width: 100%;
+        padding: 0;
+        flex-shrink: 0;
+    }
+    .chat-side {
+        flex: 1;
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+    }
+    .chat-window {
+        flex: 1;
+        overflow-y: auto;
+        max-height: none;
+    }
+    .message {
+        max-width: 95%;
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+    .input-area {
+        flex-shrink: 0;
+        flex-direction: column;
+        gap: 8px;
+    }
+    input,
+    button {
+        width: 100%;
+        font-size: 0.9rem;
+        padding: 3px;
+    }
+    .mic-button {
+        display: block;
+    }
 }
