@@ -122,7 +122,7 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
   const [recognizing, setRecognizing] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
-  
+  const [voiceBuffer, setVoiceBuffer] = useState("");
 
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -215,21 +215,28 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
 
   const startRecognition = () => {
     if (!SpeechRecognition) {
-      alert('Seu navegador não suporta Reconhecimento de Voz. Use Chrome/Android.');
+      alert('Seu navegador não suporta Reconhecimento de Voz.');
       return;
     }
 
+    // 👇 Se já está gravando → parar e ENVIAR a fala
     if (recognizing) {
-      stopRecognition();
-    } else if (recognitionRef.current) {
-      try {
-        recognitionRef.current.start();
-      } catch (e) {
-        console.error("Não foi possível iniciar o microfone:", e);
-        setRecognizing(false);
-        alert('Falha ao iniciar o microfone. Verifique permissões (HTTPS obrigatório).');
+      recognitionRef.current.stop();
+      setRecognizing(false);
+
+      const finalMessage = voiceBuffer.trim();
+      setVoiceBuffer("");
+
+      if (finalMessage.length > 0) {
+        sendVoiceMessage(finalMessage);
       }
+      return;
     }
+
+    // 👇 Se não está gravando → começar
+    setVoiceBuffer("");
+    recognitionRef.current.start();
+    setRecognizing(true);
   };
 
   const stopRecognitionAfterDelay = (delay = 3000) => {
@@ -272,20 +279,13 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
     };
 
     recognition.onresult = (event: any) => {
-      stopRecognitionAfterDelay(3000); 
-      
-      let finalTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalTranscript += result[0].transcript;
-        } 
+      let transcript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
       }
 
-      if (finalTranscript) {
-        console.log('🗣️ Transcrição Final:', finalTranscript);
-        sendVoiceMessage(finalTranscript);
-        stopRecognition(); 
+      if (transcript.trim()) {
+        setVoiceBuffer(prev => prev + " " + transcript.trim());
       }
     };
 
