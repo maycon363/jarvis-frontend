@@ -7,13 +7,25 @@ interface ConfigModalProps {
   onClose: () => void;
   show3DModel: boolean;
   toggle3DModel: () => void;
+  currentEnvironment: string; // Environment atual (ex: 'night')
+  setEnvironment: (preset: string) => void; // Função para mudar o Environment
 }
 
 const ConfigModal: React.FC<ConfigModalProps> = ({
   onClose,
   show3DModel,
-  toggle3DModel
+  toggle3DModel,
+  currentEnvironment, // Recebe
+  setEnvironment // Recebe
 }) => {
+
+  const presets = [
+    { value: "night", label: "Noite (Performance/Escuro)" },
+    { value: "city", label: "Cidade (Padrão/Equilibrado)" },
+    { value: "studio", label: "Estúdio (Brilho Neutro)" },
+    { value: "forest", label: "Floresta (Luz Quente)" },
+    { value: "performance", label: "Performance (Somente Luzes Simples)" },
+  ];
 
   return (
     <div className="config-overlay" onClick={onClose}>
@@ -45,6 +57,23 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
             >
               {show3DModel ? "Desativar Modelo 3D" : "Ativar Modelo 3D"}
             </button>
+          </div>
+
+          <div className="config-separator"></div>
+
+          <div className="config-block">
+            <p>Seleção do Ambiente (Reflexos e Luz)</p>
+            <select
+              className="config-select-env"
+              value={currentEnvironment}
+              onChange={(e) => setEnvironment(e.target.value)}
+            >
+              {presets.map((preset) => (
+                <option key={preset.value} value={preset.value}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="config-separator"></div>

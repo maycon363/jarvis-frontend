@@ -1,5 +1,5 @@
 // src/pages/Chat.tsx
-import  { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { IronManModel } from '../components/IronManModel';
 import { v4 as uuidv4 } from 'uuid';
@@ -33,6 +33,7 @@ interface ChatProps {
   toggleMenu: () => void;
   isMenuOpen: boolean;
   show3DModel: boolean;
+  environmentPreset: string;
 }
 
 interface ChatResponse {
@@ -68,7 +69,7 @@ const fallbackSpeak = (text: string, setSpeaking: (s: boolean) => void) => {
   synth.speak(utterance);
 };
 
-export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps) {
+export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentPreset }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [recognizing, setRecognizing] = useState(false);
@@ -101,10 +102,8 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
   const sendAndProcessMessage = async (userMessage: string) => {
     if (!userMessage.trim()) return;
 
-    // adiciona a mensagem do usuário
     setMessages(prev => [...prev, { sender: "user", text: userMessage }]);
 
-    // offline
     if (isOffline) {
       const resposta = respostasOffline(userMessage) || "Estou offline no momento, senhor Maycon.";
       setMessages(prev => [...prev, { sender: "jarvis", text: resposta }]);
@@ -113,7 +112,6 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
     }
 
     try {
-      // chamada única e correta do backend
       const response = await axios.post<ChatResponse>(
         "https://jarvis-backend-6xuu.onrender.com/api/chat",
         { message: userMessage, sessionId }
@@ -121,10 +119,8 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
 
       const botMessage = response.data.reply;
 
-      // adiciona mensagem do j.a.r.v.i.s
       setMessages(prev => [...prev, { sender: "jarvis", text: botMessage }]);
 
-      // Detecta link REAL escrito no texto
       const urlMatch = botMessage.match(/https?:\/\/[^\s]+/);
       if (urlMatch) {
         openLink(urlMatch[0]);
@@ -154,9 +150,13 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
 
   const stopRecognition = () => {
     if (!recognitionRef.current) return;
-    recognitionRef.current.stop();
+
+    try {
+      recognitionRef.current.stop();
+    } catch (_) {}
+
     setRecognizing(false);
-  };
+  }
 
   const startRecognition = () => {
     if (!SpeechRecognition) {
@@ -166,15 +166,24 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
 
     if (recognizing) {
       stopRecognition();
-      const finalText = voiceBuffer.trim();
-      setVoiceBuffer("");
-      if (finalText.length > 0) sendVoiceMessage(finalText);
       return;
     }
 
+    if (!recognitionRef.current) {
+        alert("O motor de voz não está inicializado. Recarregue a página (HTTPS obrigatório).");
+        return;
+    }
+
     setVoiceBuffer("");
-    recognitionRef.current.start();
-    setRecognizing(true);
+
+    try {
+        recognitionRef.current.start();
+        setRecognizing(true);
+    } catch (e) {
+        console.error("Falha ao iniciar o microfone:", e);
+        alert("Falha ao iniciar o microfone. Verifique as permissões do navegador.");
+        setRecognizing(false);
+    }
   };
 
   const stopRecognitionAfterDelay = (delay = 3000) => {
@@ -193,6 +202,8 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
     recognition.interimResults = true;
     recognition.lang = "pt-BR";
 
+    recognitionRef.current = recognition; 
+    
     recognition.onstart = () => {
       setRecognizing(true);
       stopRecognitionAfterDelay(5000);
@@ -209,19 +220,25 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
     recognition.onerror = (e: any) => {
       setRecognizing(false);
       console.error("Speech error:", e.error);
+      stopRecognition(); 
     };
 
     recognition.onresult = (event: any) => {
       let finalText = "";
+
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
           finalText += event.results[i][0].transcript + " ";
         }
       }
-      if (finalText.trim()) setVoiceBuffer(finalText.trim());
-    };
 
-    recognitionRef.current = recognition;
+      if (finalText.trim()) {
+        setVoiceBuffer(finalText.trim());
+        stopRecognition();
+        sendVoiceMessage(finalText.trim());
+        setVoiceBuffer("");
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -247,9 +264,12 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel }: ChatProps)
 
       <div className="layout-wrapper">
         <div className="model-side">
-          {show3DModel ? <IronManModel speaking={speaking} /> : (
+          {show3DModel ? <IronManModel 
+            speaking={speaking}
+            environmentPreset={environmentPreset}
+          /> : (
             <div className="lite-placeholder">
-              <img src={liteGif} className="lite-gif" />
+              <img src={liteGif} className="lite-gif" alt="Modo leve" />
               <p>Modo leve ativado!</p>
             </div>
           )}

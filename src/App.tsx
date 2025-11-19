@@ -22,6 +22,8 @@ function App() {
   // 🟢 ESTADO DO MODELO 3D
   const [show3DModel, setShow3DModel] = useState(true);
 
+  const [environmentPreset, setEnvironmentPreset] = useState('night');
+
   const toggleMenu = () => {
     setIsMenuOpen(prev => !prev);
   };
@@ -58,6 +60,10 @@ function App() {
         onClose={() => setOpenModal(null)}
         show3DModel={show3DModel}
         toggle3DModel={() => setShow3DModel(prev => !prev)}
+        
+        // 🛑 NOVO: Passando o estado atual e a função de atualização
+        currentEnvironment={environmentPreset}
+        setEnvironment={setEnvironmentPreset}
       />
     );
   }
@@ -90,6 +96,7 @@ function App() {
             toggleMenu={toggleMenu}
             isMenuOpen={isMenuOpen}
             show3DModel={show3DModel}        // 🟢 PASSADO PARA O CHAT
+            environmentPreset={environmentPreset}
           />
         </>
       )}

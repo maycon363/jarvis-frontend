@@ -1,4 +1,3 @@
-// src/components/IronManModel.tsx
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, OrbitControls, Environment, ContactShadows } from '@react-three/drei';
@@ -7,6 +6,7 @@ import * as THREE from 'three';
 
 interface Props {
     speaking: boolean;
+    environmentPreset: string;
 }
 
 // Componente auxiliar para a cena e otimização
@@ -109,7 +109,7 @@ function Scene({ glbPath, speaking, isMobile }: { glbPath: string, speaking: boo
     );
 }
 
-export function IronManModel({ speaking }: Props) {
+export function IronManModel({ speaking, environmentPreset }: Props) {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     useEffect(() => {
@@ -122,6 +122,8 @@ export function IronManModel({ speaking }: Props) {
     const cameraFOV = isMobile ? 25 : 25;
 
     const glbPath = new URL('/assets/ironman_mark85.glb', import.meta.url).href;
+
+    const isLiteMode = environmentPreset === 'performance';
 
     return (
         <Canvas
@@ -142,10 +144,25 @@ export function IronManModel({ speaking }: Props) {
             }}
         >
             {/* Luzes principais */}
-            <Environment files="https://cdn.jsdelivr.net/gh/Poly-Haven/asset-metadata/HDRIs/kiara_1_dawn_2k.hdr" background={false}  />
-            <ambientLight intensity={0.05} />
+            
+            {!isLiteMode && (
+                <Environment 
+                    // ✅ CORREÇÃO VITAL: Usando um link de CDN mais confiável para o HDR (Poly Haven)
+                    files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/venice_sunset_1k.hdr" 
+                    preset={environmentPreset as any} 
+                    background={false} 
+                />
+            )}
+            
+            {/* Se for Lite Mode, garantimos que pelo menos uma luz simples esteja acesa */}
+            {isLiteMode && (
+                <>
+                    {/* Luz ambiente simples e leve */}
+                    <ambientLight intensity={2.0} color={0xaaaaaa} /> 
+                    <directionalLight position={[0, 100, 0]} intensity={1.5} color={0xdddddd} />
+                </>
+            )}
 
-            <directionalLight position={[216, 86, 36]} intensity={0.1} castShadow />
             <pointLight position={[256, 86, 46]} intensity={0.1} />
 
             <ContactShadows
