@@ -80,6 +80,7 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<any>(null);
   const silenceTimeoutRef = useRef<number | null>(null);
+  const lastVoiceRef = useRef<string>(""); 
 
   const [sessionId] = useState<string>(() => {
     const stored = sessionStorage.getItem('jarvis_session_id');
@@ -159,6 +160,7 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
   }
 
   const startRecognition = () => {
+    lastVoiceRef.current = "";
     if (!SpeechRecognition) {
       alert("Navegador não suporta reconhecimento de voz.");
       return;
@@ -224,21 +226,24 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
     };
 
     recognition.onresult = (event: any) => {
-      let finalText = "";
+  let finalText = "";
 
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          finalText += event.results[i][0].transcript + " ";
-        }
-      }
+  for (let i = event.resultIndex; i < event.results.length; i++) {
+    if (event.results[i].isFinal) {
+      finalText += event.results[i][0].transcript + " ";
+    }
+  }
 
-      if (finalText.trim()) {
-        setVoiceBuffer(finalText.trim());
-        stopRecognition();
-        sendVoiceMessage(finalText.trim());
-        setVoiceBuffer("");
-      }
-    };
+  finalText = finalText.trim();
+
+    if (finalText && finalText !== lastVoiceRef.current) {
+      lastVoiceRef.current = finalText;
+
+      stopRecognition();
+      sendVoiceMessage(finalText);
+      setVoiceBuffer("");
+    }
+  };
   }, []);
 
   useEffect(() => {
