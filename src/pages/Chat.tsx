@@ -284,7 +284,6 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
           /> : (
             <div className="lite-placeholder">
               <img src={liteGif} className="lite-gif" alt="Modo leve" />
-              <p>Modo leve ativado!</p>
             </div>
           )}
         </div>

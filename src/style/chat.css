@@ -59,8 +59,9 @@ body {
 
 @media (max-width: 480px) {
   .lite-gif {
-    width: 180px;
-    height: 180px;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 5px;
   }
 }
 
