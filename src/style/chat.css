@@ -57,6 +57,13 @@ body {
   margin-bottom: 10px;
 }
 
+@media (max-width: 480px) {
+  .lite-gif {
+    width: 180px;
+    height: 180px;
+  }
+}
+
 .lite-placeholder p {
     margin-top: 1rem;
     font-size: 1.6rem;
