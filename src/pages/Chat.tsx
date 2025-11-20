@@ -81,6 +81,7 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
   const recognitionRef = useRef<any>(null);
   const silenceTimeoutRef = useRef<number | null>(null);
   const lastVoiceRef = useRef<string>(""); 
+  const finalResultTimeoutRef = useRef<number | null>(null);
 
   const [sessionId] = useState<string>(() => {
     const stored = sessionStorage.getItem('jarvis_session_id');
@@ -226,23 +227,33 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
     };
 
     recognition.onresult = (event: any) => {
-      
-      const lastResultIndex = event.results.length - 1;
-      const lastResult = event.results[lastResultIndex];
+    const lastResultIndex = event.results.length - 1;
+    const lastResult = event.results[lastResultIndex];
 
-      if (!lastResult.isFinal) return; 
+    if (!lastResult.isFinal) return;
 
-      const transcript = lastResult[0].transcript.trim();
+    const transcript = lastResult[0].transcript.trim();
 
-      if (!transcript || transcript === lastVoiceRef.current) return;
+    if (!transcript) return;
+
+    // LIMPA TIMEOUT ANTERIOR (mobile manda vários finais)
+    if (finalResultTimeoutRef.current) {
+      clearTimeout(finalResultTimeoutRef.current);
+    }
+
+    // AGUARDA POR MAIS FINAIS (300-500ms)
+    finalResultTimeoutRef.current = window.setTimeout(() => {
+      // evita enviar repetido
+      if (transcript === lastVoiceRef.current) return;
 
       lastVoiceRef.current = transcript;
 
       stopRecognition();
       sendVoiceMessage(transcript);
       setVoiceBuffer("");
-    };
-  }, []);
+
+    }, 350); 
+}; }, []);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
