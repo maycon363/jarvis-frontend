@@ -201,7 +201,7 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
 
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
-    recognition.interimResults = true;
+    recognition.interimResults = false;
     recognition.lang = "pt-BR";
 
     recognitionRef.current = recognition; 
@@ -226,24 +226,22 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
     };
 
     recognition.onresult = (event: any) => {
-  let finalText = "";
+      
+      const lastResultIndex = event.results.length - 1;
+      const lastResult = event.results[lastResultIndex];
 
-  for (let i = event.resultIndex; i < event.results.length; i++) {
-    if (event.results[i].isFinal) {
-      finalText += event.results[i][0].transcript + " ";
-    }
-  }
+      if (!lastResult.isFinal) return; 
 
-  finalText = finalText.trim();
+      const transcript = lastResult[0].transcript.trim();
 
-    if (finalText && finalText !== lastVoiceRef.current) {
-      lastVoiceRef.current = finalText;
+      if (!transcript || transcript === lastVoiceRef.current) return;
+
+      lastVoiceRef.current = transcript;
 
       stopRecognition();
-      sendVoiceMessage(finalText);
+      sendVoiceMessage(transcript);
       setVoiceBuffer("");
-    }
-  };
+    };
   }, []);
 
   useEffect(() => {
