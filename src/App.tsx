@@ -2,24 +2,26 @@
 
 import './App.css';
 import Chat from './pages/Chat';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import bgVideo from './assets/jarvis-bg.mp4';
-
+import type { ModalType } from './types/types';
 import Menu from './components/Menu';
 import HelpModal from './components/HelpModal';
-import ConfigModal from './components/ConfigModal'; // 🟢 IMPORTADO AGORA
+import ConfigModal from './components/ConfigModal'; 
 
-// Tipo de modal
-type ModalType = 'Ajuda' | 'Configurações' | 'Perfil';
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Qual modal está aberto
+  const [particleColor, setParticleColor] = useState("#2030B3");
+  const [particleCount, setParticleCount] = useState(6000);
+  const [particleSize, setParticleSize] = useState(2.4);
+
+  const clearChatRef = useRef<(() => void) | null>(null);
+
   const [openModal, setOpenModal] = useState<ModalType | null>(null);
 
-  // 🟢 ESTADO DO MODELO 3D
   const [show3DModel, setShow3DModel] = useState(true);
 
   const [environmentPreset, setEnvironmentPreset] = useState('night');
@@ -47,7 +49,6 @@ function App() {
     return () => clearTimeout(timeout);
   }, []);
 
-  // 🟢 SISTEMA DE MODAIS
   let ActiveModal = null;
 
   if (openModal === "Ajuda") {
@@ -60,10 +61,15 @@ function App() {
         onClose={() => setOpenModal(null)}
         show3DModel={show3DModel}
         toggle3DModel={() => setShow3DModel(prev => !prev)}
-        
-        // 🛑 NOVO: Passando o estado atual e a função de atualização
         currentEnvironment={environmentPreset}
         setEnvironment={setEnvironmentPreset}
+        particleColor={particleColor}
+        setParticleColor={setParticleColor}
+        particleCount={particleCount}
+        setParticleCount={setParticleCount}
+        particleSize={particleSize}
+        setParticleSize={setParticleSize}
+        clearChat={() => clearChatRef.current?.()}
       />
     );
   }
@@ -89,14 +95,19 @@ function App() {
             toggleMenu={toggleMenu}
             onSelectOption={handleSelectOption}
             toggle3DModel={() => setShow3DModel(prev => !prev)}
+            onClearChat={() => console.log("Chat limpo")} 
           />
 
           {ActiveModal}
           <Chat 
             toggleMenu={toggleMenu}
             isMenuOpen={isMenuOpen}
-            show3DModel={show3DModel}        // 🟢 PASSADO PARA O CHAT
+            show3DModel={show3DModel}        
             environmentPreset={environmentPreset}
+            particleColor={particleColor}
+            particleCount={particleCount}
+            particleSize={particleSize}
+            clearChatRef={clearChatRef}
           />
         </>
       )}

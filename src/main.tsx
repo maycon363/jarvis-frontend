@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import './style/chat.css'
 import './style/menu.css'
+import './style/helpmodal.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

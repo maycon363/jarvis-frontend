@@ -1,5 +1,44 @@
 /* src/index.css */
 
+/* Garante que o SweetAlert2 fique sempre acima do model */
+.swal2-container {
+  z-index: 999999 !important;
+}
+
+.swal2-popup {
+  z-index: 999999 !important;
+}
+
+.swal2-popup {
+  background: rgba(0, 20, 40, 0.6) !important;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.5) !important;
+  border: 1px solid rgba(1, 5, 7, 0.4) !important;
+  color: #32cdf0 !important;
+}
+
+.swal2-title {
+  color: #f30a0a !important;
+  text-shadow: 0 6px #000000;
+}
+
+.swal2-html-container {
+  color: #32cdf0 !important;
+}
+
+.swal2-confirm,
+.swal2-cancel {
+  border-radius: 8px !important;
+  background: #0094c8 !important;
+  color: white !important;
+  border: none !important;
+}
+
+.swal2-cancel {
+  background: #b30000 !important;
+}
+
+
 .loading-screen {
   position: fixed;
   top: 0;

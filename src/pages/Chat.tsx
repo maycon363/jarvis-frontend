@@ -3,26 +3,22 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { IronManModel } from '../components/IronManModel';
 import { v4 as uuidv4 } from 'uuid';
-import liteGif from "../assets/javis.gif";
+import { Canvas } from '@react-three/fiber';
+import { ParticleSphere } from '../components/ParticleSphere';
 
-declare global {
-  interface Window {
-    webkitSpeechRecognition: any;
-    SpeechRecognition: any;
-  }
-}
+const BACKEND_URL = "https://jarvis-backend-6xuu.onrender.com"; // sua URL no Render
 
 const openLink = (url: string) => {
   if (!url) return;
   const isMobile = /android|iphone|ipad/i.test(navigator.userAgent);
   try {
-    isMobile ? (window.location.href = url) : window.open(url, "_blank", "noopener,noreferrer");
+    isMobile
+      ? (window.location.href = url)
+      : window.open(url, "_blank", "noopener,noreferrer");
   } catch (e) {
     console.error("Erro ao abrir link:", e);
   }
 };
-
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 interface Message {
   sender: 'user' | 'jarvis';
@@ -34,6 +30,10 @@ interface ChatProps {
   isMenuOpen: boolean;
   show3DModel: boolean;
   environmentPreset: string;
+  particleColor?: string;
+  particleCount: number;
+  particleSize: number;
+  clearChatRef: React.MutableRefObject<(() => void) | null>;
 }
 
 interface ChatResponse {
@@ -42,107 +42,116 @@ interface ChatResponse {
   audioBase64: string | null;
 }
 
-const fallbackSpeak = (text: string, setSpeaking: (s: boolean) => void) => {
+const fallbackSpeak = (text: string, onStateChange: (s: boolean) => void) => {
   const synth = window.speechSynthesis;
   synth.cancel();
-
   const utterance = new SpeechSynthesisUtterance(text);
 
-  utterance.onstart = () => {
-    setSpeaking(true);
-    const mask = document.querySelector('.ironman-mask img');
-    if (mask) mask.classList.add('speaking');
-  };
-
-  utterance.onend = () => {
-    setSpeaking(false);
-    const mask = document.querySelector('.ironman-mask img');
-    if (mask) mask.classList.remove('speaking');
-  };
-
-  const voices = synth.getVoices().filter(v => v.lang.toLowerCase().startsWith("pt"));
-  utterance.voice = voices[0] || synth.getVoices()[0];
+  utterance.onstart = () => onStateChange(true);
+  utterance.onend = () => onStateChange(false);
 
   utterance.pitch = 1;
   utterance.rate = 1;
-
   synth.speak(utterance);
 };
 
-export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentPreset }: ChatProps) {
+export default function Chat({
+  toggleMenu,
+  isMenuOpen,
+  show3DModel,
+  environmentPreset,
+  particleCount,
+  particleSize,
+  clearChatRef
+}: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [recognizing, setRecognizing] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
-  const [voiceBuffer, setVoiceBuffer] = useState("");
 
   const chatEndRef = useRef<HTMLDivElement | null>(null);
-  const recognitionRef = useRef<any>(null);
-  const silenceTimeoutRef = useRef<number | null>(null);
-  const lastVoiceRef = useRef<string>(""); 
-  const finalResultTimeoutRef = useRef<number | null>(null);
+  const [sphereStatus, setSphereStatus] =
+    useState<"idle" | "speaking" | "error" | "success">("idle");
 
-  const [sessionId] = useState<string>(() => {
-    const stored = sessionStorage.getItem('jarvis_session_id');
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
+
+  const [sessionId] = useState(() => {
+    const stored = sessionStorage.getItem("jarvis_session_id");
     if (stored) return stored;
     const newId = uuidv4();
-    sessionStorage.setItem('jarvis_session_id', newId);
+    sessionStorage.setItem("jarvis_session_id", newId);
     return newId;
   });
 
-  const speak = (base64Audio: string | null, fallbackText: string) => {
-    fallbackSpeak(fallbackText, setSpeaking);
+  const clearMessages = () => setMessages([]);
+  useEffect(() => {
+    clearChatRef.current = clearMessages;
+  }, []);
+
+  const speak = (text: string, forceErrorState = false) => {
+    if (!forceErrorState) setSphereStatus("speaking");
+    fallbackSpeak(text, (state) => {
+      setSpeaking(state);
+      if (!state && !forceErrorState) setSphereStatus("idle");
+    });
   };
 
-  const respostasOffline = (mensagem: string): string | null => {
-    const t = mensagem.toLowerCase();
-    if (/\b(clima|tempo)\b/.test(t)) return "Estou offline no momento, senhor Maycon.";
+  const respostasOffline = (msg: string) => {
+    const t = msg.toLowerCase();
+    if (t.includes("clima") || t.includes("tempo"))
+      return "Não tenho acesso ao clima ainda, senhor Maycon.";
     return null;
   };
 
   const sendAndProcessMessage = async (userMessage: string) => {
     if (!userMessage.trim()) return;
 
-    setMessages(prev => [...prev, { sender: "user", text: userMessage }]);
+    setMessages((p) => [...p, { sender: "user", text: userMessage }]);
+    setSphereStatus("speaking");
 
     if (isOffline) {
-      const resposta = respostasOffline(userMessage) || "Estou offline no momento, senhor Maycon.";
-      setMessages(prev => [...prev, { sender: "jarvis", text: resposta }]);
-      speak(null, resposta);
+      const resposta =
+        respostasOffline(userMessage) ||
+        "Estou offline no momento, senhor Maycon.";
+
+      setMessages((p) => [...p, { sender: "jarvis", text: resposta }]);
+      speak(resposta);
       return;
     }
 
     try {
       const response = await axios.post<ChatResponse>(
-        "https://jarvis-backend-6xuu.onrender.com/api/chat",
+        `${BACKEND_URL}/api/chat`,
         { message: userMessage, sessionId }
       );
 
       const botMessage = response.data.reply;
-
-      setMessages(prev => [...prev, { sender: "jarvis", text: botMessage }]);
+      setMessages((p) => [...p, { sender: "jarvis", text: botMessage }]);
 
       const urlMatch = botMessage.match(/https?:\/\/[^\s]+/);
-      if (urlMatch) {
-        openLink(urlMatch[0]);
-      }
+      if (urlMatch) openLink(urlMatch[0]);
 
-      speak(null, botMessage);
-
+      setSphereStatus("success");
+      speak(botMessage);
     } catch (err) {
-      console.error("Erro ao enviar mensagem:", err);
-      const msg = "Erro ao se conectar ao sistema, senhor Maycon.";
-      setMessages(prev => [...prev, { sender: "jarvis", text: msg }]);
-      speak(null, msg);
+      console.error("Erro ao enviar:", err);
+      setSphereStatus("error");
+
+      const msg = "Sistema em manutenção, tente novamente mais tarde!";
+      setMessages((p) => [...p, { sender: "jarvis", text: msg }]);
+
+      speak(msg, true);
+      setTimeout(() => setSphereStatus("idle"), 3500);
     }
   };
 
-  const sendMessage = async () => {
+  const sendMessage = () => {
     if (!input.trim()) return;
     const msg = input.trim();
     setInput("");
-    await sendAndProcessMessage(msg);
+    sendAndProcessMessage(msg);
   };
 
   const sendVoiceMessage = async (text: string) => {
@@ -150,114 +159,53 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
     await sendAndProcessMessage(text);
   };
 
-  const stopRecognition = () => {
-    if (!recognitionRef.current) return;
+  const startRecording = async () => {
+    if (speaking) return;
+    if (recognizing) { stopRecording(); return; }
 
     try {
-      recognitionRef.current.stop();
-    } catch (_) {}
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      recorderRef.current = recorder;
+      audioChunksRef.current = [];
 
-    setRecognizing(false);
-  }
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
 
-  const startRecognition = () => {
-    lastVoiceRef.current = "";
-    if (!SpeechRecognition) {
-      alert("Navegador não suporta reconhecimento de voz.");
-      return;
-    }
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "audio.webm");
 
-    if (recognizing) {
-      stopRecognition();
-      return;
-    }
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/stt`, { method: "POST", body: formData });
+          const data = await res.json();
+          if (data.text) sendVoiceMessage(data.text);
+        } catch (err) { console.error("Erro STT:", err); }
 
-    if (!recognitionRef.current) {
-        alert("O motor de voz não está inicializado. Recarregue a página (HTTPS obrigatório).");
-        return;
-    }
-
-    setVoiceBuffer("");
-
-    try {
-        recognitionRef.current.start();
-        setRecognizing(true);
-    } catch (e) {
-        console.error("Falha ao iniciar o microfone:", e);
-        alert("Falha ao iniciar o microfone. Verifique as permissões do navegador.");
+        audioChunksRef.current = [];
         setRecognizing(false);
-    }
-  };
+        setSphereStatus("idle");
+      };
 
-  const stopRecognitionAfterDelay = (delay = 3000) => {
-    if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
-
-    silenceTimeoutRef.current = window.setTimeout(() => {
-      stopRecognition();
-    }, delay);
-  };
-
-  useEffect(() => {
-    if (!SpeechRecognition) return;
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = "pt-BR";
-
-    recognitionRef.current = recognition; 
-    
-    recognition.onstart = () => {
+      recorder.start();
       setRecognizing(true);
-      stopRecognitionAfterDelay(5000);
-    };
-
-    recognition.onend = () => {
-      setRecognizing(false);
-      if (silenceTimeoutRef.current) {
-        clearTimeout(silenceTimeoutRef.current);
-        silenceTimeoutRef.current = null;
-      }
-    };
-
-    recognition.onerror = (e: any) => {
-      setRecognizing(false);
-      console.error("Speech error:", e.error);
-      stopRecognition(); 
-    };
-
-    recognition.onresult = (event: any) => {
-    const lastResultIndex = event.results.length - 1;
-    const lastResult = event.results[lastResultIndex];
-
-    if (!lastResult.isFinal) return;
-
-    const transcript = lastResult[0].transcript.trim();
-
-    if (!transcript) return;
-
-    // LIMPA TIMEOUT ANTERIOR (mobile manda vários finais)
-    if (finalResultTimeoutRef.current) {
-      clearTimeout(finalResultTimeoutRef.current);
+      setSphereStatus("success");
+    } catch (err) {
+      console.error("Erro ao iniciar microfone:", err);
+      alert("Erro ao acessar o microfone.");
     }
+  };
 
-    // AGUARDA POR MAIS FINAIS (300-500ms)
-    finalResultTimeoutRef.current = window.setTimeout(() => {
-      // evita enviar repetido
-      if (transcript === lastVoiceRef.current) return;
+  const stopRecording = () => {
+    if (!recorderRef.current) return;
+    try { recorderRef.current.stop(); recorderRef.current.stream.getTracks().forEach(track => track.stop()); } catch {}
+    setRecognizing(false);
+    setSphereStatus("idle");
+  };
 
-      lastVoiceRef.current = transcript;
-
-      stopRecognition();
-      sendVoiceMessage(transcript);
-      setVoiceBuffer("");
-
-    }, 350); 
-}; }, []);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   useEffect(() => {
     const onOnline = () => setIsOffline(false);
@@ -278,12 +226,17 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
 
       <div className="layout-wrapper">
         <div className="model-side">
-          {show3DModel ? <IronManModel 
-            speaking={speaking}
-            environmentPreset={environmentPreset}
-          /> : (
+          {show3DModel ? (
+            <IronManModel speaking={speaking} environmentPreset={environmentPreset} />
+          ) : (
             <div className="lite-placeholder">
-              <img src={liteGif} className="lite-gif" alt="Modo leve" />
+              <Canvas>
+                <ParticleSphere
+                  status={sphereStatus}
+                  particleCount={particleCount}
+                  size={particleSize}
+                />
+              </Canvas>
             </div>
           )}
         </div>
@@ -294,7 +247,8 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
           <div className="chat-window">
             {messages.map((msg, idx) => (
               <div key={idx} className={`message ${msg.sender}`}>
-                <strong>{msg.sender === "jarvis" ? "JARVIS" : "VOCÊ"}:</strong> {msg.text}
+                <strong>{msg.sender === "jarvis" ? "JARVIS" : "VOCÊ"}:</strong>{" "}
+                {msg.text}
               </div>
             ))}
             <div ref={chatEndRef} />
@@ -304,19 +258,22 @@ export default function Chat({ toggleMenu, isMenuOpen, show3DModel, environmentP
             <input
               type="text"
               value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && sendMessage()}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Fale com o JARVIS..."
               disabled={speaking}
             />
-
-            <button onClick={sendMessage} disabled={!input.trim() || speaking}>
+            <button
+              className="bnt-envit"
+              onClick={sendMessage}
+              disabled={!input.trim() || speaking}
+            >
               Enviar
             </button>
 
             <button
-              onClick={startRecognition}
-              className={`mic-button ${recognizing ? "active" : ""}`}
+              onClick={startRecording}
+              className={`bnt-envit mic-button ${recognizing ? "active" : ""}`}
               disabled={speaking}
             >
               {recognizing ? "🛑" : "🎙️"}

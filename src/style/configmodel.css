@@ -1,10 +1,5 @@
 /* src/style/configmodel.css */
 
-
-/* =======================
-   CONFIG MODAL (JARVIS HUD)
-   ======================= */
-
 .config-overlay {
     position: fixed;
     inset: 0;
@@ -17,7 +12,26 @@
     z-index: 9999;
 }
 
+.config-container::-webkit-scrollbar {
+    width: 10px;
+}
+
+.config-container::-webkit-scrollbar-track {
+    background: #00fff7;
+    border-radius: 6px;
+}
+
+.config-container::-webkit-scrollbar-thumb {
+    background: #ff004f;
+    border-radius: 4px;
+    border: 1px solid #000;
+    box-shadow: 0 0 4px #00fff7;
+}
+
+
 .config-container {
+    overflow-y: auto;
+    max-height: 80vh;
     background: rgba(15, 17, 22, 0.96);
     border: 2px solid #00eaff;
     border-radius: 10px;
@@ -30,8 +44,6 @@
 }
 
 
-/* HEADER */
-
 .config-header {
     display: flex;
     justify-content: space-between;
@@ -41,8 +53,14 @@
     margin-bottom: 15px;
 }
 
+.config-title-text {
+    border-left: red 4px solid;
+    padding-left: 10px;
+}
+
 .config-title {
     color: #00eaff;
+
     font-size: 1.4rem;
     text-shadow: 0 0 10px #00eaff;
     letter-spacing: 1px;
@@ -63,8 +81,6 @@
     transform: scale(1.2);
 }
 
-
-/* BODY */
 
 .config-body h3 {
     color: #00eaff;
@@ -123,8 +139,53 @@
     text-shadow: #00eaff 0px 0px 14px;
 }
 
+.config-close-btn {
+    background: #ff0606;
+    color: rgb(255, 255, 255);
+    padding: 12px;
+    font-size: 1.6rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.2s;
+    border: none;
+}
 
-/* ESTADO ATIVO (3D ON) = VERDE */
+.config-close-btn:hover {
+  background: #00eaff;
+  color: #000;
+  font-size: 1.6rem;
+}
+
+.chat-block-clear {
+    margin-bottom: 20px;
+    padding: 12px;
+    background: rgba(0, 238, 255, 0.05);
+    border-left: 5px solid #ff0000ee;
+}
+
+.chat-block-clear p {
+    color: #ffffff;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    font-size: 1.1rem;
+}
+
+.chat-clear-btn {
+    background: #ff0606;
+    color: rgb(255, 255, 255);
+    padding: 10px;
+    font-size: 1.2rem;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.2s;
+    border: none;
+}
+
+.chat-clear-btn:hover {
+  background: #126b34;
+  border: none;
+}
 
 .config-action-btn.btn-on {
     background: #00ff62;
