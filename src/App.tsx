@@ -8,7 +8,7 @@ import type { ModalType } from './types/types';
 import Menu from './components/Menu';
 import HelpModal from './components/HelpModal';
 import ConfigModal from './components/ConfigModal'; 
-
+import SupportModal from './components/SupportModal';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -72,6 +72,10 @@ function App() {
         clearChat={() => clearChatRef.current?.()}
       />
     );
+  }
+
+  if (openModal === "Suporte") {
+    ActiveModal = <SupportModal onClose={() => setOpenModal(null)} />;
   }
 
   return (

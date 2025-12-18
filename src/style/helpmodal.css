@@ -31,17 +31,17 @@
 }
 
 .modal-content {
-    background-color: #0b0c10;
-    color: #00fff7;
-    padding: 30px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 600px;
-    box-shadow: 0 0 20px rgba(0, 255, 247, 0.8);
-    border: 2px solid #00fff7;
-    animation: fadeIn 0.3s ease-out;
-    max-height: 80vh;
-    overflow-y: auto;
+  background-color: rgba(11, 12, 16, 0.95);
+  color: #00fff7;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 650px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 0 25px #00fff7, 0 0 50px #ff004f;
+  border: 2px solid #00fff7;
+  animation: fadeIn 0.3s ease-out;
 }
 
 @keyframes fadeIn {
@@ -64,25 +64,40 @@
     padding-bottom: 10px;
 }
 
+.help-card, .info-box {
+  background: rgba(0, 255, 247, 0.05);
+  border: 1px solid #00fff7;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.info-box h2 {
+    color: #00fff7;
+    margin-bottom: 10px;
+    text-shadow: 0 0 6px #00fff7;
+}
+
+.info-box p {
+    color: #e0fefe;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.help-card:hover, .info-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px #00fff7, 0 0 40px #ff004f;
+}
+
+.info-box strong {
+    color: #ff004f;
+}
+
 .modal-title {
-    font-size: 1.8rem;
-    color: #ff004f;
-    text-shadow: 0 0 5px #ff004f;
-}
-
-.close-button {
-    background: none;
-    border: none;
-    color: #ff004f;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.2s;
-}
-
-.close-button:hover {
-    background-color: rgba(255, 0, 79, 0.2);
+  font-size: 2rem;
+  color: #ff004f;
+  text-shadow: 0 0 8px #ff004f, 0 0 4px #101111;
 }
 
 .modal-body {
@@ -110,6 +125,28 @@
     text-shadow: 0 0 2px #00fff7;
 }
 
+.help-card ul {
+    color: #ff004f;
+    padding: 20px;
+    margin-bottom: 8px;
+}
+
+.help-card h3 svg {
+  margin-right: 10px;
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+.alert h3 svg {
+  margin-right: 10px;
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+.help-card p {
+    color: #ff004f;
+}
+
 .help-section ul {
     list-style: none;
     padding-left: 0;
@@ -124,7 +161,7 @@
 
 .help-section-config {
     margin-top: 20px;
-    padding: 15px;
+    padding: 10px;
     border: 3px dashed rgb(252, 24, 24);
     border-radius: 5px;
 }
@@ -132,7 +169,7 @@
 .help-section-config ul {
     border: 1px double rgb(177, 24, 24);
     margin-bottom: 10px;
-    padding: 8px;
+    padding: 2px;
 }
 
 .help-section-config h2{
@@ -140,10 +177,10 @@
 }
 
 .help-separator {
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, transparent, #00fff7, transparent);
-    margin: 20px 0;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, transparent, #00fff7, #ff004f, transparent);
+  margin: 20px 0;
 }
 
 .help-section-config h3, h4{

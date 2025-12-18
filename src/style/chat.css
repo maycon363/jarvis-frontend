@@ -112,9 +112,9 @@ body {
 }
 
 .chat-side {
+    flex: 1 1 50%;
     display: flex;
     flex-direction: column;
-    width: 50%;
     min-height: 0;
 }
 
@@ -155,7 +155,6 @@ body {
     box-shadow: 0 0 6px #ff004f;
 }
 
-
 .message {
     margin-bottom: 6px;
     max-width: 70%;
@@ -189,8 +188,42 @@ body {
 .input-area {
     flex-shrink: 0;
     display: flex;
-    padding: 10px;
+    padding: 30px;
     gap: 10px;
+}
+
+.input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 14px 48px 14px 18px; 
+}
+
+.send-inside {
+    position: absolute;
+    right: 6px;
+    background: transparent;
+    border: none;
+    color: #13b42e;
+    text-shadow: 0 0 30px #13b42e;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-color: #00c0d7;
+    transition: all 0.2s ease;
+}
+
+.send-inside:disabled {
+    color: #ff004f;
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 input {
@@ -220,20 +253,38 @@ input:focus {
 }
 
 .bnt-envit {
-    padding: 14px 30px;
-    background: #00fff7;
+    padding: 14px 20px;
+    background: #10ad1e;
     border: none;
-    border-radius: 10px;
-    color: #000;
+    border-radius: 15px;
+    color: #ffffff;
+    text-shadow: #000000 1x 1px 1px;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     cursor: pointer;
     transition: background 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 0 10px #00fff7;
+    box-shadow: 0 0 10px #07c917;
     text-transform: uppercase;
     letter-spacing: 1.2px;
     height: 50px;
     min-width: 50px;
+    text-transform: capitalize;
+}
+
+.mic-button {
+    background: #00fff7;
+    border: none;
+    border-radius: 50%;
+    color: #000;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 0 10px #00fff7;
+    height: 50px;
+    width: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .bnt-envit:hover:not(:disabled) {
@@ -242,10 +293,12 @@ input:focus {
 }
 
 .bnt-envit:disabled {
-    background: #555;
+    background: #9b0c0c;
     cursor: not-allowed;
     box-shadow: none;
-    color: #222;
+    box-shadow: 0 0 10px #9b0c0c;
+    color: #fcf9f9;
+    text-shadow: #000 1px 1px 1px;
 }
 
 .mic-button {
@@ -253,7 +306,7 @@ input:focus {
 }
 
 .mic-button.active {
-    background: #ff004f;
+    background: #33ff00;
 }
 
 @keyframes fadeIn {
@@ -300,25 +353,32 @@ input:focus {
 }
 
 
+
 @media (max-width: 1100px) {
+    /* O Menu desliza e fica escondido por padrão */
     .menu {
         transform: translateX(-100%);
         width: 85vw;
+        /* Ocupa a maior parte da tela em mobile */
         border-right: none;
         box-shadow: 0 0 30px rgba(0, 255, 247, 0.8);
     }
+    /* Quando a classe 'open' é aplicada, ele desliza para dentro */
     .menu.open {
         transform: translateX(0);
     }
+    /* O botão hamburger aparece no canto superior esquerdo */
     .hamburger-button {
         display: flex;
         justify-content: center;
         align-items: center;
     }
+    /* O container principal não tem margem e ocupa a largura total */
     .jarvis-container {
         margin-left: 0;
         width: 100%;
     }
+    /* Layout Wrapper: Coloca o modelo e o chat um em cima do outro */
     .layout-wrapper {
         flex-direction: column;
         align-items: center;
@@ -345,6 +405,7 @@ input:focus {
         padding: 10px;
         gap: 10px;
     }
+    /* Aumentando o padding superior em mobile para evitar sobreposição */
     .layout-wrapper {
         padding-top: 65px;
     }
@@ -407,6 +468,7 @@ input:focus {
         padding: 5px;
         gap: 8px;
         padding-top: 55px;
+        /* Ajuste para o botão fixo */
     }
     .model-side {
         max-height: 200px;
@@ -438,54 +500,96 @@ input:focus {
     scroll-margin-bottom: 100px;
 }
 
-@media screen and (orientation: landscape) and (max-height: 500px) {
-    html,
-    body {
-        height: 100vh;
-        overflow: hidden;
-    }
+@media (orientation: landscape) and (max-height: 500px) {
+    
+    /* 1. Ajuste do Layout Principal (FORÇA MÁXIMA PARA LINHA) */
     .layout-wrapper {
-        flex-direction: column;
-        flex-wrap: wrap;
-        gap: 3px;
-        height: 100vh;
-        padding-top: 55px;
+        flex-direction: row !important; /* Deve ser uma linha (lado a lado) */
+        height: calc(var(--safe-height) - 50px) !important; /* Usa altura segura menos o padding-top */
+        height: 100vh !important;       /* Usa 100% da altura da viewport */
+        width: 100vw !important;        /* Usa 100% da largura da viewport */
+        gap: 10px !important;
+        overflow: hidden !important; 
+        padding-top: 50px !important; 
+
     }
+
+    /* 2. Redução para 20% do Modelo (e garantindo a altura total) */
     .model-side {
-        max-height: 119px;
-        width: 100%;
-        padding: 0;
-        flex-shrink: 0;
+        width: 20% !important; 
+        flex: 0 0 20% !important; 
+        height: 450% !important; /* CHAVE: Ocupa a altura total do layout-wrapper */
+        flex-shrink: 0 !important; 
+        align-items: center !important; 
+        overflow: hidden !important; 
+        justify-content: center !important; 
+        min-width: 40% !important;
+        max-width: 40% !important; 
     }
+    
+    /* 3. Ajuste do Conteúdo do Modelo (Canvas e Placeholder) */
+    .model-side canvas, 
+    .model-side .lite-placeholder {
+        width: 100% !important; 
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        display: block !important; 
+    }
+    
+    /* 4. Aumento Máximo da Coluna do Chat (80% largura) */
     .chat-side {
-        flex: 1;
-        min-height: 100px;
-        display: flex;
-        flex-direction: column;
-        box-sizing: border-box;
+        width: 50% !important; 
+        flex: 1 1 50% !important; 
+        height: 100% !important; /* CHAVE: Ocupa a altura total do layout-wrapper */
+        display: flex !important; 
+        flex-direction: column !important; /* Deve ser coluna para empilhar chat-window e input */
+        min-height: 0 !important; 
     }
+
+    /* 5. Ajuste da Janela do Chat (Área de Mensagens) */
     .chat-window {
-        flex: 1;
-        overflow-y: auto;
-        max-height: none;
+        flex-grow: 1 !important; /* CHAVE: Ocupa todo o espaço vertical disponível */
+        max-height: none !important; 
+        overflow-y: auto !important; 
+        padding: 10px !important;
     }
-    .message {
-        max-width: 95%;
-        padding: 8px 10px;
-        font-size: 0.8rem;
-    }
+
+    /* 6. Reorganização e Compactação da Área de Input */
     .input-area {
-        flex-shrink: 0;
-        flex-direction: column;
-        gap: 8px;
+        flex-direction: row !important; /* Input e botões na mesma linha */
+        flex-wrap: nowrap !important; /* Impedir quebra de linha do input se houver espaço */
+        flex-shrink: 0 !important; /* CHAVE: Garante que a área de input não encolha */
+        gap: 5px !important; 
+        padding: 5px 0 !important;
+        /* Remover o padding do .chat-side para que o input fique na borda */
+        margin: 0 10px 0 10px !important; 
     }
-    input,
-    button {
-        width: 100%;
-        font-size: 0.9rem;
-        padding: 3px;
+    
+    /* Ajustes específicos para os elementos de input no modo paisagem */
+    .input-area input {
+        flex-grow: 1 !important; /* Ocupa o máximo possível */
+        width: auto !important; /* Permite que o flex defina a largura */
+        order: 1 !important; 
+        padding: 8px 12px !important;
+        font-size: 0.9rem !important;
+        height: 40px !important;
     }
-    .mic-button {
-        display: block;
+
+    .input-area .bnt-envit.envit-button {
+        flex-grow: 0 !important; /* Impede o botão de crescer */
+        order: 2 !important; 
+        padding: 8px 15px !important;
+        font-size: 0.9rem !important;
+        height: 40px !important;
+        min-width: 50px !important; 
+    }
+
+    .input-area .mic-button {
+        flex-shrink: 0 !important; 
+        width: 40px !important; 
+        height: 40px !important;
+        order: 3 !important; 
+        margin-left: 0 !important; 
     }
 }

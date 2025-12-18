@@ -5,8 +5,14 @@ import { IronManModel } from '../components/IronManModel';
 import { v4 as uuidv4 } from 'uuid';
 import { Canvas } from '@react-three/fiber';
 import { ParticleSphere } from '../components/ParticleSphere';
+import { FaMicrophone, FaStop, FaPaperPlane } from "react-icons/fa";
+import { FaArrowAltCircleUp } from "react-icons/fa";
 
-const BACKEND_URL = "https://jarvis-backend-6xuu.onrender.com"; // sua URL no Render
+// 🔹 Backend dinâmico: localhost para dev, Render para produção
+const BACKEND_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:3001"
+    : "https://jarvis-backend-6xuu.onrender.com";
 
 const openLink = (url: string) => {
   if (!url) return;
@@ -69,6 +75,8 @@ export default function Chat({
   const [recognizing, setRecognizing] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [armorError, setArmorError] = useState(false);
+  const [showColdStartInfo, setShowColdStartInfo] = useState(true);
 
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const [sphereStatus, setSphereStatus] =
@@ -114,7 +122,7 @@ export default function Chat({
     if (isOffline) {
       const resposta =
         respostasOffline(userMessage) ||
-        "Estou offline no momento, senhor Maycon.";
+        "Estou offline no momento, tente novamente mais tarde.";
 
       setMessages((p) => [...p, { sender: "jarvis", text: resposta }]);
       speak(resposta);
@@ -138,12 +146,17 @@ export default function Chat({
     } catch (err) {
       console.error("Erro ao enviar:", err);
       setSphereStatus("error");
+      setArmorError(true);
 
       const msg = "Sistema em manutenção, tente novamente mais tarde!";
       setMessages((p) => [...p, { sender: "jarvis", text: msg }]);
 
       speak(msg, true);
-      setTimeout(() => setSphereStatus("idle"), 3500);
+
+      setTimeout(() => {
+          setSphereStatus("idle");
+          setArmorError(false);
+      }, 3500);
     }
   };
 
@@ -179,10 +192,18 @@ export default function Chat({
         formData.append("audio", audioBlob, "audio.webm");
 
         try {
-          const res = await fetch(`${BACKEND_URL}/api/stt`, { method: "POST", body: formData });
-          const data = await res.json();
-          if (data.text) sendVoiceMessage(data.text);
-        } catch (err) { console.error("Erro STT:", err); }
+          // 🔹 VOICE AUTH removido temporariamente para permitir conversa
+          // const authRes = await fetch(`${BACKEND_URL}/api/voice-auth`, { method: "POST", body: formData });
+          // const authData = await authRes.json();
+          // if (!authData.authenticated) throw new Error("Voz não reconhecida");
+
+          // 🔹 STT direto
+          const sttRes = await fetch(`${BACKEND_URL}/api/stt`, { method: "POST", body: formData });
+          const sttData = await sttRes.json();
+          if (sttData.text) sendVoiceMessage(sttData.text);
+        } catch (err) {
+          console.error("Erro voz:", err);
+        }
 
         audioChunksRef.current = [];
         setRecognizing(false);
@@ -227,22 +248,24 @@ export default function Chat({
       <div className="layout-wrapper">
         <div className="model-side">
           {show3DModel ? (
-            <IronManModel speaking={speaking} environmentPreset={environmentPreset} />
+            <IronManModel speaking={speaking} environmentPreset={environmentPreset} error={armorError} />
           ) : (
             <div className="lite-placeholder">
               <Canvas>
-                <ParticleSphere
-                  status={sphereStatus}
-                  particleCount={particleCount}
-                  size={particleSize}
-                />
+                <ParticleSphere status={sphereStatus} particleCount={particleCount} size={particleSize} />
               </Canvas>
             </div>
           )}
         </div>
 
         <div className="chat-side">
-          {isOffline && <div className="offline-warning">⚠️ Modo Offline ativado.</div>}
+          {isOffline && (
+            <div className="offline-warning">
+              ⚠️ Modo Offline ativado.
+            </div>
+          )}
+
+
 
           <div className="chat-window">
             {messages.map((msg, idx) => (
@@ -255,28 +278,33 @@ export default function Chat({
           </div>
 
           <div className="input-area">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              placeholder="Fale com o JARVIS..."
-              disabled={speaking}
-            />
-            <button
-              className="bnt-envit"
-              onClick={sendMessage}
-              disabled={!input.trim() || speaking}
-            >
-              Enviar
-            </button>
+            <div className="input-wrapper">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                placeholder="Fale com o JARVIS..."
+                disabled={speaking}
+              />
+
+              <button
+                className="send-inside"
+                onClick={sendMessage}
+                disabled={!input.trim() || speaking}
+                aria-label="Enviar mensagem"
+              >
+                <FaArrowAltCircleUp size={29} />
+              </button>
+            </div>
 
             <button
               onClick={startRecording}
-              className={`bnt-envit mic-button ${recognizing ? "active" : ""}`}
+              className={`mic-button ${recognizing ? "active" : ""}`}
               disabled={speaking}
+              aria-label="Microfone"
             >
-              {recognizing ? "🛑" : "🎙️"}
+              {recognizing ? <FaStop size={18} /> : <FaMicrophone size={18} />}
             </button>
           </div>
         </div>

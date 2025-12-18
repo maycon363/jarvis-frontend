@@ -3,6 +3,7 @@
 import React from "react";
 import "../style/configmodel.css";
 import Swal from "sweetalert2";
+import { FaRegTrashAlt } from "react-icons/fa";
 
 interface ConfigModalProps {
   onClose: () => void;
@@ -118,7 +119,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
           <h3>Sistema</h3>
 
           <div className="chat-block-clear">
-            <p>Apagar todo o histórico do chat:</p>
+            <p>Limpar todo o histórico do chat:</p>
             <button 
               onClick={() => {
                 Swal.fire({
@@ -134,7 +135,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
                     clearChat();
                     Swal.fire({
                       title: "Deletado!",
-                      text: "Chat foi apagado com sucesso!",
+                      text: "Chat foi limpo com sucesso!",
                       icon: "success"
                     });
                   }
@@ -143,7 +144,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
               }}
               className="chat-clear-btn"
             >
-              🗑️ Apagar Conversa
+              <FaRegTrashAlt size={20}/> Limpar Conversa
             </button>
           </div>
 

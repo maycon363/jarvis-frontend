@@ -2,7 +2,10 @@
 
 import React from 'react';
 import type { ModalType } from '../types/types';
-
+import { FcCustomerSupport } from "react-icons/fc";
+import { FcServices } from "react-icons/fc";
+import { FcDecision } from "react-icons/fc";
+import { FcCommandLine } from "react-icons/fc";
 
 interface MenuProps {
   isOpen: boolean;
@@ -25,17 +28,20 @@ const Menu: React.FC<MenuProps> = ({ isOpen,  onSelectOption }) => {
       </div>
       <ul className="menu-list">
         <li onClick={() => handleOptionClick('Ajuda')}>
-          Ajuda
+          <FcDecision size={22} />Ajuda
         </li>
         <li onClick={() => handleOptionClick('Configurações')}>
-          Configurações
+          <FcServices size={22} />Configurações
         </li>
-        <li onClick={() => handleOptionClick('Perfil')}>
-          Perfil
+        <li onClick={() => handleOptionClick('Suporte')}>
+          <FcCustomerSupport size={22} />Suporte
+        </li>
+        <li>
+          <FcCommandLine size={22} />Desenvolvedor
         </li>
       </ul>
       <div className="menu-footer">
-        <p>V 1.1.1 - Acesso Autorizado!!</p>
+        <p>V 1.1.8 - Acesso Autorizado!!</p>
       </div>
     </div>
   );

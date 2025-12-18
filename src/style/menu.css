@@ -8,7 +8,7 @@
     height: 100vh;
     background-color: #0b0c10;
     color: #00fff7;
-    box-shadow: 2px 0 15px rgba(0, 255, 247, 0.7);
+    box-shadow: 2px 0 15px rgba(21, 22, 22, 0.7);
     padding: 20px;
     z-index: 15;
     transition: transform 0.3s ease-in-out;
@@ -26,9 +26,10 @@
 .menu-header h2 {
     color: #00fff7;
     margin-top: 70px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-shadow: 0 0 5px #00fff7;
-    text-decoration: underline;
+    text-decoration: underline #ff004f 2px;
+    text-underline-offset: 6px;
     font-size: 1.5rem;
     text-align: center;
 }
@@ -36,7 +37,7 @@
 .menu-list {
     list-style: none;
     padding: 0;
-    margin-bottom: 40px;
+    margin-bottom: 25px;
     flex-grow: 1;
 }
 
@@ -49,6 +50,12 @@
     border-radius: 5px;
 }
 
+.menu li svg {
+  margin-right: 10px;
+  font-size: 18px;
+  vertical-align: middle;
+}
+
 .menu-list li:hover {
     color: #ff004f;
     text-shadow: 0 0 8px #ff004f;
@@ -57,7 +64,8 @@
 
 .menu-footer p {
     font-size: 0.9rem;
-    color: #555;
+    color: #e0c1c1;
+    text-shadow: #00fff7 0 2 18px;
     text-align: center;
     padding-top: 10px;
     border-top: 1px dashed rgba(255, 255, 255, 0.1);
@@ -65,13 +73,13 @@
 
 .hamburger-button {
     position: fixed;
-    top: 20px;
-    left: 20px;
+    top: 15px;
+    left: 15px;
     z-index: 20;
     background: #ff004f;
     color: white;
     padding: 8px 12px;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     line-height: 1;
     border-radius: 5px;
     cursor: pointer;
@@ -131,3 +139,19 @@
     margin-bottom: 10px;
 }
 
+@media (orientation: landscape) and (max-height: 500px) {
+    .menu {
+        height: 100vh;
+    }
+    .menu-header h2 {
+        margin-top: 50px;
+    }
+    .menu-list li {
+        font-size: 1.0rem;
+        padding: 8px 8px;  
+    }
+    .menu-footer p {
+        font-size: 0.7rem;
+        padding-top: 2px;
+    }
+}

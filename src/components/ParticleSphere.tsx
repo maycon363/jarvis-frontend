@@ -11,7 +11,7 @@ interface ParticleSphereProps {
 }
 
 export function ParticleSphere({
-  size = 2.2,
+  size = 1.8,
   particleCount = 6000,
   status = "idle",
 }: ParticleSphereProps) {
@@ -23,9 +23,6 @@ export function ParticleSphere({
     error: "#8f1313",
     success: "#22118f",
   };
-
-  
-
 
   const color = palette[status];
 
@@ -54,10 +51,13 @@ export function ParticleSphere({
       const radius = Math.sqrt(1 - y * y);
       const theta = goldenAngle * i;
 
-      const x = Math.cos(theta) * radius * size;
-      const z = Math.sin(theta) * radius * size;
+      const densityFactor = 0.85; 
+      
+      const x = Math.cos(theta) * radius * size * densityFactor;
+      const z = Math.sin(theta) * radius * size * densityFactor;
+      const yPos = y * size * densityFactor;
 
-      positions.set([x, y * size, z], i * 3);
+      positions.set([x, yPos, z], i * 3);
     }
 
     return positions;
@@ -68,6 +68,7 @@ export function ParticleSphere({
 
     const t = state.clock.elapsedTime;
     const pos = ref.current.geometry.attributes.position.array as Float32Array;
+    const moveAmount = 0.0008;
 
     // Movimento
     for (let i = 0; i < particleCount; i++) {
@@ -75,9 +76,10 @@ export function ParticleSphere({
       const speed = orbitSpeeds[i];
       const o = offsets;
 
-      pos[idx]     += Math.cos(t * speed + o[idx]) * 0.002;
-      pos[idx + 1] += Math.sin(t * speed + o[idx + 1]) * 0.002;
-      pos[idx + 2] += Math.sin(t * speed + o[idx + 2]) * 0.002;
+      
+      pos[idx]     += Math.cos(t * speed + o[idx]) * moveAmount;
+      pos[idx + 1] += Math.sin(t * speed + o[idx + 1]) * moveAmount;
+      pos[idx + 2] += Math.sin(t * speed + o[idx + 2]) * moveAmount;
     }
 
     ref.current.geometry.attributes.position.needsUpdate = true;
@@ -119,15 +121,13 @@ export function ParticleSphere({
     else ref.current.rotation.y += 0.002;
   });
 
-  
-
   return (
     <>
       <Points ref={ref} positions={particles} stride={3}>
         <PointMaterial
           transparent
           color={color}
-          size={0.045}
+          size={0.035}
           sizeAttenuation
           depthWrite={false}
           opacity={0.95}

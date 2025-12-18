@@ -5,6 +5,8 @@ import App from './App.tsx'
 import './style/chat.css'
 import './style/menu.css'
 import './style/helpmodal.css'
+import './style/configmodel.css'
+import './style/supportmodal.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

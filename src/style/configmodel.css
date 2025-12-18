@@ -28,7 +28,6 @@
     box-shadow: 0 0 4px #00fff7;
 }
 
-
 .config-container {
     overflow-y: auto;
     max-height: 80vh;
@@ -42,7 +41,6 @@
     animation: scaleIn 0.25s ease;
     position: relative;
 }
-
 
 .config-header {
     display: flex;
@@ -142,8 +140,8 @@
 .config-close-btn {
     background: #ff0606;
     color: rgb(255, 255, 255);
-    padding: 12px;
-    font-size: 1.6rem;
+    padding: 8px;
+    font-size: 1.3rem;
     cursor: pointer;
     border-radius: 8px;
     transition: 0.2s;
