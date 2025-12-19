@@ -7,31 +7,49 @@ interface SupportModalProps {
   onClose: () => void;
 }
 
+type SubmitStatus = "idle" | "loading" | "success" | "error";
+
 const SupportModal: React.FC<SupportModalProps> = ({ onClose }) => {
+    
+
+    const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
+    const [statusMessage, setStatusMessage] = useState("");
+
+
     const BACKEND_URL =
     window.location.hostname === "localhost"
         ? "http://localhost:3001"
         : "https://jarvis-backend-6xuu.onrender.com";
 
-
     const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
     const [status, setStatus] = useState("");
+    
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus("Enviando...");
-        try {
-            const res = await axios.post(`${BACKEND_URL}/api/support`, form);
-            setStatus(res.data.message);
-            setForm({ name: "", email: "", subject: "", message: "" });
-        } catch (err) {
-            console.error(err);
-            setStatus("Erro ao enviar. Tente novamente.");
-        }
+      e.preventDefault();
+
+      setSubmitStatus("loading");
+      setStatusMessage("Enviando mensagem...");
+
+      try {
+        const res = await axios.post(`${BACKEND_URL}/api/support`, form);
+
+        setSubmitStatus("success");
+        setStatusMessage(res.data.message || "Mensagem enviada com sucesso!");
+
+        setForm({ name: "", email: "", subject: "", message: "" });
+      } catch (err: any) {
+        console.error(err);
+
+        setSubmitStatus("error");
+        setStatusMessage(
+          err.response?.data?.error || "Erro ao enviar. Tente novamente."
+        );
+      }
     };
   return (
     <div className="support-overlay" onClick={onClose}>
@@ -50,7 +68,7 @@ const SupportModal: React.FC<SupportModalProps> = ({ onClose }) => {
 
         <div className="support-body">
           <p className="support-description">
-            Envie sua dúvida ou problema para nossa equipe.
+            Envie sua dúvida ou problema para o desenvolvedor.
           </p>
 
           <form className="support-form" onSubmit={handleSubmit}>
@@ -59,9 +77,18 @@ const SupportModal: React.FC<SupportModalProps> = ({ onClose }) => {
             <input type="text" name="subject" placeholder="Assunto" value={form.subject} onChange={handleChange} required />
             <textarea name="message" placeholder="Mensagem" value={form.message} onChange={handleChange} required />
 
-            <button type="submit" className="support-submit-btn">
-              Enviar mensagem
+            <button
+              type="submit"
+              className="support-submit-btn"
+              disabled={submitStatus === "loading"}
+            >
+              {submitStatus === "loading" ? "Enviando..." : "Enviar mensagem"}
             </button>
+            {submitStatus !== "idle" && (
+              <p className={`support-status ${submitStatus}`}>
+                {statusMessage}
+              </p>
+            )}
           </form>
         </div>
       </div>

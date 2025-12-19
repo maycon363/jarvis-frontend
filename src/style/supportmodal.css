@@ -159,6 +159,15 @@
     box-shadow: 0 0 20px #00ff88;
 }
 
+.support-status.success { color: #2ecc71; }
+.support-status.error { color: #e74c3c; }
+.support-status.loading { color: #f1c40f; }
+
+.support-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ANIMAÇÕES (REUTILIZADAS) */
 @keyframes fadeIn {
     from { opacity: 0; }
