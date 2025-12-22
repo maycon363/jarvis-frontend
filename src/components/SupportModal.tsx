@@ -10,47 +10,44 @@ interface SupportModalProps {
 type SubmitStatus = "idle" | "loading" | "success" | "error";
 
 const SupportModal: React.FC<SupportModalProps> = ({ onClose }) => {
-    
 
-    const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
-    const [statusMessage, setStatusMessage] = useState("");
+  const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
+  const [statusMessage, setStatusMessage] = useState("");
 
+  const BACKEND_URL =
+  window.location.hostname === "localhost"
+      ? "http://localhost:3001"
+      : "https://jarvis-backend-6xuu.onrender.com";
 
-    const BACKEND_URL =
-    window.location.hostname === "localhost"
-        ? "http://localhost:3001"
-        : "https://jarvis-backend-6xuu.onrender.com";
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
 
-    const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
-    const [status, setStatus] = useState("");
-    
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
+    setSubmitStatus("loading");
+    setStatusMessage("Enviando mensagem...");
 
-      setSubmitStatus("loading");
-      setStatusMessage("Enviando mensagem...");
+    try {
+      const res = await axios.post(`${BACKEND_URL}/api/support`, form);
 
-      try {
-        const res = await axios.post(`${BACKEND_URL}/api/support`, form);
+      setSubmitStatus("success");
+      setStatusMessage(res.data.message || "Mensagem enviada com sucesso!");
 
-        setSubmitStatus("success");
-        setStatusMessage(res.data.message || "Mensagem enviada com sucesso!");
+      setForm({ name: "", email: "", subject: "", message: "" });
+    } catch (err: any) {
+      console.error(err);
 
-        setForm({ name: "", email: "", subject: "", message: "" });
-      } catch (err: any) {
-        console.error(err);
+      setSubmitStatus("error");
+      setStatusMessage(
+        err.response?.data?.error || "Erro ao enviar. Tente novamente."
+      );
+    }
+  };
 
-        setSubmitStatus("error");
-        setStatusMessage(
-          err.response?.data?.error || "Erro ao enviar. Tente novamente."
-        );
-      }
-    };
   return (
     <div className="support-overlay" onClick={onClose}>
       <div

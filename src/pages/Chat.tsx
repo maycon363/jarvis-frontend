@@ -76,7 +76,6 @@ export default function Chat({
   const [speaking, setSpeaking] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [armorError, setArmorError] = useState(false);
-  const [showColdStartInfo, setShowColdStartInfo] = useState(true);
 
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const [sphereStatus, setSphereStatus] =
@@ -108,8 +107,6 @@ export default function Chat({
 
   const respostasOffline = (msg: string) => {
     const t = msg.toLowerCase();
-    if (t.includes("clima") || t.includes("tempo"))
-      return "Não tenho acesso ao clima ainda, senhor Maycon.";
     return null;
   };
 
@@ -192,12 +189,6 @@ export default function Chat({
         formData.append("audio", audioBlob, "audio.webm");
 
         try {
-          // 🔹 VOICE AUTH removido temporariamente para permitir conversa
-          // const authRes = await fetch(`${BACKEND_URL}/api/voice-auth`, { method: "POST", body: formData });
-          // const authData = await authRes.json();
-          // if (!authData.authenticated) throw new Error("Voz não reconhecida");
-
-          // 🔹 STT direto
           const sttRes = await fetch(`${BACKEND_URL}/api/stt`, { method: "POST", body: formData });
           const sttData = await sttRes.json();
           if (sttData.text) sendVoiceMessage(sttData.text);
