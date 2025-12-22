@@ -43,7 +43,9 @@ interface ChatProps {
 }
 
 interface ChatResponse {
+  type: "message" | "action";
   reply: string;
+  payload: any;
   sessionId: string;
   audioBase64: string | null;
 }
@@ -132,14 +134,24 @@ export default function Chat({
         { message: userMessage, sessionId }
       );
 
-      const botMessage = response.data.reply;
-      setMessages((p) => [...p, { sender: "jarvis", text: botMessage }]);
+      const { type, payload } = response.data;
 
-      const urlMatch = botMessage.match(/https?:\/\/[^\s]+/);
-      if (urlMatch) openLink(urlMatch[0]);
+      if (type === "action" && payload.action === "openLink") {
+        openLink(payload.url);
 
-      setSphereStatus("success");
-      speak(botMessage);
+        setMessages((p) => [
+          ...p,
+          { sender: "jarvis", text: "Abrindo agora." }
+        ]);
+
+        speak("Abrindo agora.");
+        return;
+      }
+
+      if (type === "message") {
+        setMessages((p) => [...p, { sender: "jarvis", text: payload }]);
+        speak(payload);
+      }
     } catch (err) {
       console.error("Erro ao enviar:", err);
       setSphereStatus("error");
