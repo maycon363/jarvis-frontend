@@ -137,7 +137,9 @@ export default function Chat({
       const { type, payload } = response.data;
 
       if (type === "action" && payload.action === "openLink") {
-        openLink(payload.url);
+        const isMobile = /android|iphone|ipad/i.test(navigator.userAgent);
+        const url = isMobile ? payload.urls.mobile : payload.urls.desktop;
+        openLink(url);
 
         setMessages((p) => [
           ...p,
