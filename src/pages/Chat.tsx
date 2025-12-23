@@ -165,8 +165,8 @@ export default function Chat({
       speak(msg, true);
 
       setTimeout(() => {
-          setSphereStatus("idle");
-          setArmorError(false);
+        setSphereStatus("idle");
+        setArmorError(false);
       }, 3500);
     }
   };
@@ -269,8 +269,6 @@ export default function Chat({
               ⚠️ Modo Offline ativado.
             </div>
           )}
-
-
 
           <div className="chat-window">
             {messages.map((msg, idx) => (
