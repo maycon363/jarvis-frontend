@@ -36,7 +36,7 @@ const Menu: React.FC<MenuProps> = ({ isOpen,  onSelectOption }) => {
         <li onClick={() => handleOptionClick('Suporte')}>
           <FcCustomerSupport size={22} />Suporte
         </li>
-        <li>
+        <li onClick={() => handleOptionClick('Desenvolvedor')}>
           <FcCommandLine size={22} />Desenvolvedor
         </li>
       </ul>

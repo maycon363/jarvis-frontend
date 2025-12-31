@@ -1,0 +1,134 @@
+/* Estilos para a página 404 Not Found */
+.notfound-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at center, #020617, #000);
+  overflow: hidden;
+  font-family: "Orbitron", sans-serif;
+}
+
+.notfound-bg canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.notfound-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  height: 60vh;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.notfound-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+}
+
+@keyframes blinkColors {
+  0% {
+    opacity: 1;
+    color: #ff0000;
+    text-shadow: 0 0 30px #ff0000;
+  }
+  100% {
+    opacity: 1;
+    color: #00e5ff;
+    text-shadow: 0 0 30px #00e5ff;
+  }
+}
+
+.notfound-content h1 {
+  font-size: 9rem;
+  margin: 0;
+  animation: blinkColors 2s infinite;
+  color: #ff0000;
+  text-shadow: 0 0 30px #ff0000;
+}
+
+.notfound-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #e5f6ff;
+  text-align: center;
+  padding: 20px;
+}
+
+.typewriter-loop {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #e5f6ff;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid #00e5ff;
+  padding-right: 6px;
+  width: 0ch;
+  animation: typeLoop 6s steps(20, end) infinite,
+             blinkCursor 0.8s infinite;
+}
+
+@keyframes typeLoop {
+  0% {
+    width: -10ch;
+  }
+
+  30% {
+    width: 14.20ch;
+  }
+  50% {
+    width: 14.20ch;
+  }
+  80% {
+    width: -15ch;
+  }
+  100% {
+    width: -15ch;
+  }
+}
+
+@keyframes blinkCursor {
+  0% { border-color: transparent; }
+  50% { border-color: #00e5ff; }
+  100% { border-color: transparent; }
+}
+
+.notfound-content p {
+  max-width: 500px;
+  font-size: 1rem;
+  opacity: 0.85;
+  margin-bottom: 30px;
+}
+
+.jarvis {
+  color: #00e5ff;
+  font-weight: bold;
+}
+
+.notfound-content button {
+  background: transparent;
+  border: 1px solid #00e5ff;
+  color: #00e5ff;
+  padding: 12px 26px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+}
+
+.notfound-content button:hover {
+  background: #00e5ff;
+  color: #000;
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.7);
+}
+

@@ -4,27 +4,14 @@ import axios from 'axios';
 import { IronManModel } from '../components/IronManModel';
 import { v4 as uuidv4 } from 'uuid';
 import { Canvas } from '@react-three/fiber';
-import { ParticleSphere } from '../components/ParticleSphere';
-import { FaMicrophone, FaStop, FaPaperPlane } from "react-icons/fa";
+import { ParticleBrain } from '../components/ParticleBrain';
+import { FaMicrophone, FaStop } from "react-icons/fa";
 import { FaArrowAltCircleUp } from "react-icons/fa";
 
-// 🔹 Backend dinâmico: localhost para dev, Render para produção
 const BACKEND_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:3001"
     : "https://jarvis-backend-6xuu.onrender.com";
-
-const openLink = (url: string) => {
-  if (!url) return;
-  const isMobile = /android|iphone|ipad/i.test(navigator.userAgent);
-  try {
-    isMobile
-      ? (window.location.href = url)
-      : window.open(url, "_blank", "noopener,noreferrer");
-  } catch (e) {
-    console.error("Erro ao abrir link:", e);
-  }
-};
 
 interface Message {
   sender: 'user' | 'jarvis';
@@ -86,6 +73,18 @@ export default function Chat({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<BlobPart[]>([]);
 
+  const forceStopListening = () => {
+    if (recorderRef.current) {
+      try {
+        recorderRef.current.stop();
+        recorderRef.current.stream.getTracks().forEach(t => t.stop());
+      } catch {}
+      recorderRef.current = null;
+    }
+    setRecognizing(false);
+    setSphereStatus("idle");
+  };
+
   const [sessionId] = useState(() => {
     const stored = sessionStorage.getItem("jarvis_session_id");
     if (stored) return stored;
@@ -99,11 +98,37 @@ export default function Chat({
     clearChatRef.current = clearMessages;
   }, []);
 
-  const speak = (text: string, forceErrorState = false) => {
-    if (!forceErrorState) setSphereStatus("speaking");
-    fallbackSpeak(text, (state) => {
-      setSpeaking(state);
-      if (!state && !forceErrorState) setSphereStatus("idle");
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        forceStopListening();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
+
+  const speak = (text: string, isError = false) => {
+    forceStopListening(); 
+
+    // Se for erro, mantém "error", senão coloca "speaking"
+    setSphereStatus(isError ? "error" : "speaking");
+
+    fallbackSpeak(text, (isCurrentlySpeaking) => {
+      setSpeaking(isCurrentlySpeaking);
+      
+      if (!isCurrentlySpeaking) {
+        if (isError) {
+          setTimeout(() => setSphereStatus("idle"), 3500);
+        } else {
+          setSphereStatus("idle");
+        }
+      }
     });
   };
 
@@ -136,38 +161,19 @@ export default function Chat({
 
       const { type, payload } = response.data;
 
-      if (type === "action" && payload.action === "openLink") {
-        const isMobile = /android|iphone|ipad/i.test(navigator.userAgent);
-        const url = isMobile ? payload.urls.mobile : payload.urls.desktop;
-        openLink(url);
-
-        setMessages((p) => [
-          ...p,
-          { sender: "jarvis", text: "Abrindo agora." }
-        ]);
-
-        speak("Abrindo agora.");
-        return;
-      }
-
       if (type === "message") {
         setMessages((p) => [...p, { sender: "jarvis", text: payload }]);
         speak(payload);
       }
     } catch (err) {
       console.error("Erro ao enviar:", err);
-      setSphereStatus("error");
       setArmorError(true);
 
       const msg = "Sistema em manutenção, tente novamente mais tarde!";
       setMessages((p) => [...p, { sender: "jarvis", text: msg }]);
 
-      speak(msg, true);
+      speak(msg, true); 
 
-      setTimeout(() => {
-        setSphereStatus("idle");
-        setArmorError(false);
-      }, 3500);
     }
   };
 
@@ -233,17 +239,6 @@ export default function Chat({
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  useEffect(() => {
-    const onOnline = () => setIsOffline(false);
-    const onOffline = () => setIsOffline(true);
-    window.addEventListener("online", onOnline);
-    window.addEventListener("offline", onOffline);
-    return () => {
-      window.removeEventListener("online", onOnline);
-      window.removeEventListener("offline", onOffline);
-    };
-  }, []);
-
   return (
     <div className="jarvis-container">
       <button onClick={toggleMenu} className="hamburger-button">
@@ -257,18 +252,13 @@ export default function Chat({
           ) : (
             <div className="lite-placeholder">
               <Canvas>
-                <ParticleSphere status={sphereStatus} particleCount={particleCount} size={particleSize} />
+                <ParticleBrain status={sphereStatus} particleCount={particleCount} size={particleSize} />
               </Canvas>
             </div>
           )}
         </div>
 
         <div className="chat-side">
-          {isOffline && (
-            <div className="offline-warning">
-              ⚠️ Modo Offline ativado.
-            </div>
-          )}
 
           <div className="chat-window">
             {messages.map((msg, idx) => (
