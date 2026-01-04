@@ -94,7 +94,6 @@ function App() {
       {ActiveModal}
 
       <Routes>
-        {/* Rota principal do Chat */}
         <Route
           path="/jarvis-frontend/"
           element={
@@ -111,7 +110,6 @@ function App() {
           }
         />
 
-        {/* Qualquer outra URL cai no NotFound */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

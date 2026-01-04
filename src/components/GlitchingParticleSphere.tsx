@@ -2,7 +2,6 @@ import { useRef, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
-// --- COMPONENTE DE RELÂMPAGOS PROFISSIONAIS (PLASMA) ---
 function ProfessionalLightning({ radius, color, intensity = 1 }: { radius: number; color: string; intensity?: number }) {
   const lineRef = useRef<THREE.LineSegments>(null!);
   const segments = 16; 
@@ -12,7 +11,7 @@ function ProfessionalLightning({ radius, color, intensity = 1 }: { radius: numbe
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
-    // Flicker de alta frequência para parecer eletricidade real
+
     const flash = Math.sin(t * 50) > 0.6;
     lineRef.current.visible = flash;
 
@@ -22,15 +21,13 @@ function ProfessionalLightning({ radius, color, intensity = 1 }: { radius: numbe
 
       for (let b = 0; b < boltsCount; b++) {
         const offset = b * segments * 6;
-        
-        // Ponto de origem aleatório na superfície
+
         let start = new THREE.Vector3().setFromSphericalCoords(
           radius * (0.95 + Math.random() * 0.1),
           Math.random() * Math.PI,
           Math.random() * Math.PI * 2
         );
 
-        // O raio se projeta para fora da esfera
         let end = start.clone().multiplyScalar(1.4 + Math.random() * 0.4);
         let currentPoint = start.clone();
 
@@ -42,7 +39,6 @@ function ProfessionalLightning({ radius, color, intensity = 1 }: { radius: numbe
 
           let nextPoint = new THREE.Vector3().lerpVectors(start, end, (s + 1) / segments);
           
-          // Jitter fractal (caos elétrico)
           const jitter = 0.5 * intensity; 
           nextPoint.x += (Math.random() - 0.5) * jitter;
           nextPoint.y += (Math.random() - 0.5) * jitter;
@@ -75,13 +71,12 @@ function ProfessionalLightning({ radius, color, intensity = 1 }: { radius: numbe
         opacity={1}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
-        toneMapped={false} // Mantém a intensidade da cor neon
+        toneMapped={false} 
       />
     </lineSegments>
   );
 }
 
-// --- COMPONENTE PRINCIPAL: GLITCHING PARTICLE SPHERE ---
 export function GlitchingParticleSphere({
   particleCount = 25000,
   radius = 2.2,
@@ -133,13 +128,11 @@ export function GlitchingParticleSphere({
       for (let i = 0; i < particleCount; i++) {
         const i3 = i * 3;
         
-        // Efeito de Scanner e Onda (Fluidez)
         const scanLine = Math.sin(t * 1.5) * responsiveRadius;
         const distToScan = Math.abs(originalPositions[i3 + 1] - scanLine);
         const isNearScan = distToScan < 0.15;
         const wave = Math.sin(originalPositions[i3] * 0.5 + t * 2) * 0.08;
         
-        // Gatilho de Glitch (Interferência)
         const noiseTrigger = Math.sin(t * 50 + glitches[i] * 100);
         
         if (noiseTrigger > 0.98 || isNearScan) {
@@ -165,12 +158,10 @@ export function GlitchingParticleSphere({
 
   return (
     <group>
-      {/* RELÂMPAGOS TRIPLE-LAYER (Branco + Ciano + Vermelho) */}
       <ProfessionalLightning radius={responsiveRadius} color="#ffffff" intensity={0.5} />
       <ProfessionalLightning radius={responsiveRadius} color="#00f2ff" intensity={1.2} />
       <ProfessionalLightning radius={responsiveRadius} color={color} intensity={1} />
 
-      {/* ESFERA DE DADOS PRINCIPAL (Vermelha) */}
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -192,7 +183,6 @@ export function GlitchingParticleSphere({
         />
       </points>
 
-      {/* CAMADA DE BRILHO AZUL POTENCIALIZADO (DADOS FANTASMA) */}
       <points rotation={[Math.PI / 3, 0.5, 0]}>
         <bufferGeometry>
           <bufferAttribute
@@ -214,14 +204,12 @@ export function GlitchingParticleSphere({
         />
       </points>
 
-      {/* NÚCLEO CENTRAL (CORE GLOW) */}
       <mesh>
         <sphereGeometry args={[responsiveRadius * 0.06, 16, 16]} />
         <meshBasicMaterial color="#ffffff" toneMapped={false} />
         <pointLight intensity={2} distance={radius * 2} color={color} />
       </mesh>
 
-      {/* BITS DE DETRITOS AO REDOR */}
       <points ref={bitsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -241,7 +229,6 @@ export function GlitchingParticleSphere({
         />
       </points>
       
-      {/* AURA VOLUMÉTRICA (GLOW EXTERNO) */}
       <mesh>
         <sphereGeometry args={[responsiveRadius * 1.15, 32, 32]} />
         <meshBasicMaterial 

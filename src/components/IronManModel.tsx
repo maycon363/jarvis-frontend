@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
@@ -12,87 +12,71 @@ interface Props {
 
 // Componente auxiliar para a cena e otimização
 function Scene({ glbPath, speaking, error, isMobile }: { glbPath: string, speaking: boolean, error: boolean, isMobile: boolean }) {
-    // Carregamento do modelo
     const { scene } = useGLTF(glbPath);
-    const modelRef = useRef<THREE.Group>(null);
     const lightMeshRef = useRef<any>(null);
+    const modelRef = useRef<any>(null);
+    
+    // UseMemo para não recriar os objetos de cor toda hora
+    const colors = useMemo(() => ({
+        red: new THREE.Color(0xFF0000),
+        green: new THREE.Color(0x24A627),
+        black: new THREE.Color(0x000000)
+    }), []);
 
     const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
 
     useEffect(() => {
-        const onResize = () => {
-            setIsLandscape(window.innerWidth > window.innerHeight);
-        };
+        const onResize = () => setIsLandscape(window.innerWidth > window.innerHeight);
         window.addEventListener("resize", onResize);
         return () => window.removeEventListener("resize", onResize);
     }, []);
 
-    // 1. Otimização de Materiais (Executa Apenas Uma Vez)
     useEffect(() => {
         scene.traverse((child: any) => {
             if (!child.isMesh) return;
-
-            // Otimização de Geometria: Garante que as geometrias sejam planas no mobile (opcional)
-            if (isMobile) {
-                child.castShadow = false;
-                child.receiveShadow = false;
-            } else {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-
-            // Aplicação de materiais PBR
-            const metalParts = ["Red_Part", "Gold_Part", "Silver_Part"];
-            const isMetalPart = metalParts.some(part => child.name.includes(part));
-
-            if (isMetalPart) {
-                // Mantém as propriedades PBR
-                child.material.metalness = 0.9;
-                child.material.roughness = 0.5;
-                child.material.clearcoat = 1.0;
-                child.material.clearcoatRoughness = 0.02;
-                child.material.envMapIntensity = 1.0;
-                child.material.needsUpdate = true;
-            }
+            child.castShadow = !isMobile;
+            child.receiveShadow = !isMobile;
 
             if (child.name === 'Lights_Lights_0') {
                 lightMeshRef.current = child;
-                child.material.emissive = new THREE.Color(0x90faff); // Garante a cor base
+                child.material.emissiveIntensity = 0;
             }
         });
     }, [scene, isMobile]);
 
-    useFrame(() => {
+    useFrame((state) => {
         const mesh = lightMeshRef.current;
         if (!mesh) return;
 
-        const time = performance.now() * 0.01;
-        const pulse = (Math.sin(time * 6) + 1) / 2;
+        const mat = mesh.material as THREE.MeshStandardMaterial;
+        const time = state.clock.elapsedTime;
+        const pulse = (Math.sin(time * 8) + 1) / 2;
 
-        // 🔥 PRIORIDADE MÁXIMA: ERRO SEMPRE VENCE
+        // LÓGICA DE ESTADOS
         if (error) {
-            mesh.material.emissive = new THREE.Color(0xE30202);
-            mesh.material.emissiveIntensity = isMobile ? 14 : 10;
-            mesh.material.needsUpdate = true;
-            return; // impede outros estados
-        }
-
-        // 🟢 FALANDO → pulsante
-        if (speaking) {
-            mesh.material.emissive = new THREE.Color(0x24A627);
-            mesh.material.emissiveIntensity = isMobile
-                ? THREE.MathUtils.lerp(5, 12, pulse)
+            // ESTADO ERRO: Vermelho fixo/forte
+            mat.emissive.copy(colors.red);
+            mat.emissiveIntensity = isMobile ? 12 : 8;
+        } 
+        else if (speaking) {
+            // ESTADO FALANDO: Verde pulsante
+            mat.emissive.copy(colors.green);
+            mat.emissiveIntensity = isMobile 
+                ? THREE.MathUtils.lerp(4, 10, pulse) 
                 : THREE.MathUtils.lerp(2, 6, pulse);
-
-            mesh.material.needsUpdate = true;
-            return;
+        } 
+        else {
+            // ESTADO DESLIGADO: Lerp suave para o preto
+            if (mat.emissiveIntensity > 0) {
+                mat.emissiveIntensity = THREE.MathUtils.lerp(mat.emissiveIntensity, 0, 0.15);
+                if (mat.emissiveIntensity < 0.05) {
+                    mat.emissive.copy(colors.black);
+                    mat.emissiveIntensity = 0;
+                }
+            }
         }
-
-        // ⚪ NORMAL
-        mesh.material.emissive = new THREE.Color(0x000000);
-        mesh.material.emissiveIntensity = 0;
-        mesh.material.needsUpdate = true;
     });
+
     const scaleFactor =
     isMobile && isLandscape ? 1300 :        // Garante que o modelo é visível em 20%
     1340;                                   // desktop

@@ -1,6 +1,5 @@
 import React from 'react';
 import { FcAssistant } from "react-icons/fc";
-import { FcExpired } from "react-icons/fc";
 import { FcHighPriority } from "react-icons/fc";
 import { FcServices } from "react-icons/fc";
 import { FcReading, FcAnswers, FcAlarmClock  } from "react-icons/fc";

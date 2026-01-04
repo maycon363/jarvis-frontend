@@ -96,7 +96,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
             <input
               type="number"
               min={100}
-              max={20000}
+              max={80000}
               value={particleCount}
               onChange={(e) => setParticleCount(Number(e.target.value))}
             />
@@ -106,8 +106,8 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
             <p>Tamanho da Esfera:</p>
             <input
               type="range"
-              min={1.6}
-              max={2.3}
+              min={1.8}
+              max={2.6}
               step={0.1}
               value={particleSize}
               onChange={(e) => setParticleSize(Number(e.target.value))}

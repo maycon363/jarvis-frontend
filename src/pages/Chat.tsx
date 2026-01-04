@@ -63,7 +63,6 @@ export default function Chat({
   const [input, setInput] = useState('');
   const [recognizing, setRecognizing] = useState(false);
   const [speaking, setSpeaking] = useState(false);
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [armorError, setArmorError] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -98,7 +97,6 @@ export default function Chat({
     clearChatRef.current = clearMessages;
   }, []);
 
-
   useEffect(() => {
     const handleVisibility = () => {
       if (document.hidden) {
@@ -116,42 +114,32 @@ export default function Chat({
   const speak = (text: string, isError = false) => {
     forceStopListening(); 
 
-    // Se for erro, mantém "error", senão coloca "speaking"
+    setArmorError(isError);
     setSphereStatus(isError ? "error" : "speaking");
 
     fallbackSpeak(text, (isCurrentlySpeaking) => {
       setSpeaking(isCurrentlySpeaking);
       
       if (!isCurrentlySpeaking) {
+        setSphereStatus("idle");
+        
         if (isError) {
-          setTimeout(() => setSphereStatus("idle"), 3500);
+          setTimeout(() => {
+            setArmorError(false);
+          }, 3000); 
         } else {
-          setSphereStatus("idle");
+          setArmorError(false);
         }
       }
     });
   };
 
-  const respostasOffline = (msg: string) => {
-    const t = msg.toLowerCase();
-    return null;
-  };
-
   const sendAndProcessMessage = async (userMessage: string) => {
     if (!userMessage.trim()) return;
 
+    setArmorError(false);
     setMessages((p) => [...p, { sender: "user", text: userMessage }]);
     setSphereStatus("speaking");
-
-    if (isOffline) {
-      const resposta =
-        respostasOffline(userMessage) ||
-        "Estou offline no momento, tente novamente mais tarde.";
-
-      setMessages((p) => [...p, { sender: "jarvis", text: resposta }]);
-      speak(resposta);
-      return;
-    }
 
     try {
       const response = await axios.post<ChatResponse>(
@@ -163,17 +151,14 @@ export default function Chat({
 
       if (type === "message") {
         setMessages((p) => [...p, { sender: "jarvis", text: payload }]);
-        speak(payload);
+        speak(payload, false); // Garante que isError é false
       }
     } catch (err) {
       console.error("Erro ao enviar:", err);
-      setArmorError(true);
-
+      // Aqui NÃO setamos armorError diretamente, deixamos o speak(msg, true) fazer isso
       const msg = "Sistema em manutenção, tente novamente mais tarde!";
       setMessages((p) => [...p, { sender: "jarvis", text: msg }]);
-
       speak(msg, true); 
-
     }
   };
 
