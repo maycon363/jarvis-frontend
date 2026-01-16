@@ -9,7 +9,9 @@ import { FaMicrophone, FaStop, FaArrowAltCircleUp } from "react-icons/fa";
 
 // Configuração de URL - Verifique se o seu Backend roda na 3001
 const BACKEND_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3001";
+  window.location.hostname === "localhost"
+    ? "http://localhost:3001"
+    : "https://jarvis-backend-6xuu.onrender.com";
 
 interface Message {
   sender: 'user' | 'jarvis';
