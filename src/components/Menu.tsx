@@ -1,5 +1,3 @@
-// src/components/Menu.tsx
-
 import React from 'react';
 import type { ModalType } from '../types/types';
 import { FcCustomerSupport } from "react-icons/fc";
@@ -24,7 +22,7 @@ const Menu: React.FC<MenuProps> = ({ isOpen,  onSelectOption }) => {
   return (
     <div className={`menu ${isOpen ? 'open' : ''}`}>
       <div className="menu-header">
-        <h2>J.A.R.V.I.S. A.I.</h2>
+        <h2>J.A.R.V.I.S. I.A.</h2>
       </div>
       <ul className="menu-list">
         <li onClick={() => handleOptionClick('Ajuda')}>
