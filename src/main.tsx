@@ -10,7 +10,7 @@ import './style/helpmodal.css'
 import './style/configmodel.css'
 import './style/supportmodal.css'
 import './style/notFound.css'
-import './style/developermodal.css'
+import './style/developerModal.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
