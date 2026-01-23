@@ -9,7 +9,7 @@ import { FaMicrophone, FaStop, FaArrowAltCircleUp } from "react-icons/fa";
 const BACKEND_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:3001"
-    : "https://jarvis-backend-6xuu.onrender.com";
+    : "https://jarvis-backend-2-4kkb.onrender.com";
 
 interface Message {
   sender: 'user' | 'jarvis';
