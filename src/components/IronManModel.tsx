@@ -45,10 +45,12 @@ function Scene({ glbPath, speaking, error, isMobile, humor }: { glbPath: string,
         const time = state.clock.elapsedTime;
         const pulse = (Math.sin(time * 10) + 1) / 2;
 
-        const isActuallyAngry = (error || humor === 'angry') && humor !== 'neutral';
+        // Se der erro OU o humor for raiva, fica vermelho.
+        // Removi a trava do "&& humor !== 'neutral'" para o erro ter prioridade.
+        const mostrarAlertaVermelho = error || humor === 'angry';
 
-        if (isActuallyAngry) {
-            // ESTADO: RAIVA / ERRO (Vermelho Pulsante)
+        if (mostrarAlertaVermelho) {
+            // ESTADO: ALERTA / ERRO (Vermelho Pulsante)
             mat.emissive.set(0xff0000);
             mat.emissiveIntensity = THREE.MathUtils.lerp(5, 10, pulse);
         } else if (speaking) {
@@ -56,8 +58,7 @@ function Scene({ glbPath, speaking, error, isMobile, humor }: { glbPath: string,
             mat.emissive.set(0x24a627); 
             mat.emissiveIntensity = THREE.MathUtils.lerp(5, 10, pulse);
         } else {
-            // ESTADO: DESLIGADO (Blackout)
-            // A intensidade cai para 0 de forma suave (lerp)
+            // ESTADO: STANDBY (Apaga suavemente)
             mat.emissiveIntensity = THREE.MathUtils.lerp(mat.emissiveIntensity, 0, 0.1);
         }
     });
@@ -78,9 +79,9 @@ function Scene({ glbPath, speaking, error, isMobile, humor }: { glbPath: string,
             {/* LUZ DE AMBIENTE DINÂMICA: Apaga junto com o reator */}
             <pointLight
                 position={[0, 26, 5]} 
-                color={(error || humor === 'angry') && humor !== 'neutral' ? 0xff0000 : 0x90faff}
-                // Se não estiver falando ou bravo, a luz fica em 0.05 (quase nada)
-                intensity={((error || humor === 'angry') && humor !== 'neutral') || speaking ? 1.5 : 0.05}
+                // Simplificado: se houver erro ou raiva, luz vermelha
+                color={error || humor === 'angry' ? 0xff0000 : 0x90faff}
+                intensity={(error || humor === 'angry' || speaking) ? 1.5 : 0.05}
                 distance={15}
                 decay={2}
             />

@@ -118,6 +118,7 @@ export default function Chat({
   const sendAndProcessMessage = async (userMessage: string) => {
     setMessages((p) => [...p, { sender: "user", text: userMessage }]);
     setSphereStatus("speaking");
+    setArmorError(false);
 
     try {
       const response = await axios.post<ChatResponse>(`${BACKEND_URL}/api/chat`, { 
@@ -151,11 +152,20 @@ export default function Chat({
             setSphereStatus("idle");
         };
 
-        await audio.play().catch(e => console.error("Erro no player:", e));
+        await audio.play().catch(e => {
+          console.error("Erro no player:", e);
+          setArmorError(true); // ERRO: Falha ao tocar áudio -> Armadura Vermelha
+        });
       }
     } catch (err) {
-      console.error("Erro:", err);
+      console.error("Erro na comunicação:", err);
       setSphereStatus("error");
+      setArmorError(true); // ERRO: Backend fora do ar ou timeout -> Armadura Vermelha
+      
+      setMessages((p) => [...p, { 
+        sender: "jarvis", 
+        text: "Senhor, detectei uma falha crítica na conexão com os servidores Stark. Sistemas em alerta." 
+      }]);
     }
   };
 
