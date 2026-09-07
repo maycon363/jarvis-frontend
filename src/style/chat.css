@@ -118,6 +118,8 @@ body {
     min-height: 0;
 }
 
+/* ── Janela do chat: sem borda/moldura — só um leve blur de fundo,
+   pra deixar as mensagens realmente flutuando, sem "caixa" nenhuma ── */
 .chat-window {
     flex: 1;
     min-height: 0;
@@ -127,11 +129,11 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    border: 1.5px solid #00fff7;
+    border: none;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 0 8px #00fff7, inset 0 0 4px #00fff7;
-    backdrop-filter: blur(6px);
+    box-shadow: none;
+    backdrop-filter: blur(4px);
 }
 
 .chat-window::-webkit-scrollbar {
@@ -156,31 +158,35 @@ body {
 }
 
 .message {
-    margin-bottom: 6px;
+    margin-bottom: 14px;
     max-width: 70%;
     line-height: 1.4;
     font-size: 1.1rem;
-    animation: slideUpFadeIn 0.4s ease forwards;
     padding: 10px 15px;
     border-radius: 8px;
     word-break: break-word;
+    /* entra com fade+slide e depois flutua suavemente, sem parar */
+    animation: slideUpFadeIn 0.4s ease forwards, floatMsg 4s ease-in-out infinite;
+    animation-delay: 0s, 0.4s;
 }
 
+/* ── Mensagens transparentes: sem fundo, sem borda, sem sombra de caixa.
+   Só o texto com glow, dando a sensação de "flutuar" no ar. ── */
 .message.jarvis {
     color: #00fff7;
-    background: #001616;
-    border: 1px solid #00fff7;
-    text-shadow: 0 0 6px #00fff7;
-    box-shadow: 0 0 10px #00fff7;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    text-shadow: 0 0 6px rgba(0, 255, 247, 0.55), 0 0 16px rgba(0, 255, 247, 0.25);
     align-self: flex-start;
 }
 
 .message.user {
     color: #ff004f;
-    background: #1a0005;
-    border: 1px solid #ff004f;
-    text-shadow: 0 0 10px #ff004f;
-    box-shadow: 0 0 10px #ff004f;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    text-shadow: 0 0 6px rgba(255, 0, 79, 0.55), 0 0 16px rgba(255, 0, 79, 0.25);
     align-self: flex-end;
     text-align: right;
 }
@@ -301,6 +307,94 @@ input:focus {
     text-shadow: #000 1px 1px 1px;
 }
 
+.message-header {
+    display: flex;
+    align-items: end;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.message-sender {
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.message-time {
+  display: block;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  margin-top: 6px;
+  font-weight: 400;
+  font-family: 'Orbitron', sans-serif;
+  opacity: 0.7;
+}
+
+.message.user .message-time {
+  text-align: right;
+}
+
+.message.jarvis .message-time {
+  text-align: right;
+}
+
+.message-text {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.message.jarvis .message-sender {
+  color: #ffffff;
+}
+
+.message.jarvis .message-time {
+  color: #ffffff;
+}
+
+.message.user .message-sender {
+  color: #ffffff;
+}
+
+.message.user .message-time {
+  color: #ffffff;
+}
+
+/* ── Typing indicator ── */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 0;
+  height: 24px;
+}
+
+.typing-indicator span {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00fff7;
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0);    opacity: 0.4; }
+  30%            { transform: translateY(-6px); opacity: 1;   }
+}
+
+
 .mic-button {
     padding: 14px 14px;
 }
@@ -327,6 +421,12 @@ input:focus {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* ── Flutuação contínua e sutil, dando a sensação de "sem peso" ── */
+@keyframes floatMsg {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
 }
 
 

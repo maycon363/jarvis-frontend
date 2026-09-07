@@ -1,6 +1,3 @@
-/* src/index.css */
-
-/* Garante que o SweetAlert2 fique sempre acima do model */
 .swal2-container {
   z-index: 999999 !important;
 }
@@ -38,17 +35,6 @@
   background: #b30000 !important;
 }
 
-
-.loading-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  z-index: 9999;
-}
-
 .background-video {
   position: absolute;
   top: 0;
@@ -68,7 +54,7 @@
   align-items: center;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6); /* Overlay escuro por cima do vídeo */
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
 
@@ -96,7 +82,7 @@
 }
 
 .loading-gif {
-  width: auto; /* ou outro tamanho que você preferir */
+  width: auto; 
   height: auto;
   margin-top: 20px;
 }

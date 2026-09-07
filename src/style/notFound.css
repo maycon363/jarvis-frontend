@@ -1,134 +1,375 @@
-/* Estilos para a página 404 Not Found */
-.notfound-container {
-  position: relative;
+/* src/pages/NotFound.css */
+
+/* 1. Tela 404 */
+.stark-diagnostic-wrap {
+  --glitch-x: 0px;
+  --glitch-y: 0px;
   width: 100vw;
-  height: 100vh;
-  background: radial-gradient(circle at center, #020617, #000);
-  overflow: hidden;
-  font-family: "Orbitron", sans-serif;
-}
-
-.notfound-bg canvas {
-  width: 100% !important;
-  height: 100% !important;
-  display: block;
-}
-
-.notfound-canvas {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90vw;
-  height: 60vh;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.notfound-bg {
-  position: absolute;
-  inset: 0;
-  opacity: 0.4;
-}
-
-@keyframes blinkColors {
-  0% {
-    opacity: 1;
-    color: #ff0000;
-    text-shadow: 0 0 30px #ff0000;
-  }
-  100% {
-    opacity: 1;
-    color: #00e5ff;
-    text-shadow: 0 0 30px #00e5ff;
-  }
-}
-
-.notfound-content h1 {
-  font-size: 9rem;
-  margin: 0;
-  animation: blinkColors 2s infinite;
-  color: #ff0000;
-  text-shadow: 0 0 30px #ff0000;
-}
-
-.notfound-content {
+  min-height: 100vh; 
+  background: radial-gradient(circle at center, #0a0101 0%, #000 90%);
+  color: #ff3333;
+  font-family: 'Orbitron', sans-serif;
   position: relative;
-  z-index: 2;
-  height: 100%;
   display: flex;
-  flex-direction: column;
+  overflow-y: auto;
   justify-content: center;
   align-items: center;
-  color: #e5f6ff;
-  text-align: center;
+  padding: 20px 0;
+}
+
+.noise-overlay, .scanline-overlay, .static-overlay, .animated-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    repeating-radial-gradient(#000 0 0.0001%, #fff 0 0.0002%);
+  background-size: 100px 100px;
+  opacity: 0.03; 
+  pointer-events: none;
+  z-index: 100;
+  animation: noise-move 0.2s infinite;
+}
+
+.scanline-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, rgba(255, 0, 0, 0.08) 50%);
+  background-size: 100% 4px;
+  z-index: 101;
+  pointer-events: none;
+  animation: scanline-move 10s linear infinite;
+}
+
+.static-overlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    repeating-conic-gradient(#000 0% 1%, #fff 0% 2%, #555 0% 3%);
+  background-size: 4px 4px;
+  pointer-events: none;
+  z-index: 102;
+  transition: opacity 0.1s ease-out;
+}
+
+.animated-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 51, 51, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 51, 51, 0.05) 1px, transparent 1px);
+  background-size: 45px 45px;
+  transform: perspective(600px) rotateX(60deg);
+  transform-origin: bottom;
+  opacity: 0.2;
+}
+
+.hud-container-grid {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  gap: 20px;
+  z-index: 10;
+  align-items: center;
+}
+
+.hud-panel {
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 51, 51, 0.4);
   padding: 20px;
+  backdrop-filter: blur(8px);
+  clip-path: polygon(0 0, 90% 0, 100% 10%, 100% 100%, 10% 100%, 0 90%);
+  width: 100%; 
 }
 
-.typewriter-loop {
-  font-size: 1.8rem;
-  margin-bottom: 20px;
-  color: #e5f6ff;
-  overflow: hidden;
-  white-space: nowrap;
-  border-right: 2px solid #00e5ff;
-  padding-right: 6px;
-  width: 0ch;
-  animation: typeLoop 6s steps(20, end) infinite,
-             blinkCursor 0.8s infinite;
+.panel-header {
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  color: #fff;
+  border-bottom: 1px dashed #ff3333;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px #ff3333;
 }
 
-@keyframes typeLoop {
-  0% {
-    width: -10ch;
-  }
-
-  30% {
-    width: 14.20ch;
-  }
-  50% {
-    width: 14.20ch;
-  }
-  80% {
-    width: -15ch;
-  }
-  100% {
-    width: -15ch;
-  }
+.data-line {
+  font-size: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 51, 51, 0.1);
 }
 
-@keyframes blinkCursor {
-  0% { border-color: transparent; }
-  50% { border-color: #00e5ff; }
-  100% { border-color: transparent; }
+.critical { color: #fff; text-shadow: 0 0 5px #ff3333; }
+
+.main-display-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(var(--glitch-x), var(--glitch-y));
 }
 
-.notfound-content p {
-  max-width: 500px;
-  font-size: 1rem;
-  opacity: 0.85;
-  margin-bottom: 30px;
+.target-reticle {
+  width: min(350px, 80vw); 
+  height: min(350px, 80vw);
+  border: 1px solid rgba(255, 51, 51, 0.3);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  box-shadow: inset 0 0 40px rgba(255, 51, 51, 0.1);
 }
 
-.jarvis {
-  color: #00e5ff;
-  font-weight: bold;
+.error-critical-display {
+  font-size: clamp(4rem, 15vw, 10rem);
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 0 25px #ff3333;
+  animation: glitch-text-anim 0.4s infinite alternate;
 }
 
-.notfound-content button {
+
+.initiate-reboot {
+  width: 100%;
   background: transparent;
-  border: 1px solid #00e5ff;
-  color: #00e5ff;
-  padding: 12px 26px;
-  font-size: 0.95rem;
+  border: 1px solid #ff3333;
+  color: #ff3333;
+  padding: 18px;
+  font-family: 'Orbitron';
+  font-weight: bold;
   cursor: pointer;
-  border-radius: 30px;
-  transition: all 0.3s ease;
+  margin-top: 15px;
+  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+  transition: all 0.3s;
 }
 
-.notfound-content button:hover {
+.initiate-reboot:hover {
+  background: #ff3333;
+  color: #fff;
+  box-shadow: 0 0 30px #ff3333;
+  letter-spacing: 4px;
+}
+
+@media (max-width: 1024px) {
+  .hud-container-grid {
+    display: flex;
+    flex-direction: column;
+    width: 95%;
+    gap: 10px; 
+    padding: 10px;
+    height: auto; 
+  }
+
+  .hud-panel {
+    width: 100% !important;
+    min-height: auto !important;
+    transform: none !important;
+  }
+
+  .hud-panel.left { order: 1; }
+  .main-display-unit { order: 2; transform: scale(0.85); }
+  .hud-panel.right { order: 3; }
+
+  .error-critical-display { font-size: 7rem !important; }
+  .target-reticle { width: 280px !important; height: 280px !important; }
+  .mobile-hide { display: none; }
+}
+
+
+@keyframes noise-move {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 5% 5%; }
+}
+/* 7. ANIMAÇÕES KEYFRAMES */
+@keyframes noise-shift {
+  0% { transform: translate(0,0); }
+  10% { transform: translate(-1%,-1%); }
+  20% { transform: translate(1%,1%); }
+  100% { transform: translate(0,0); }
+}
+
+@keyframes scanline-move {
+  to { background-position: 0 100%; }
+}
+
+@keyframes glitch-text-anim {
+  0% { transform: skew(0deg); text-shadow: 2px 0 cyan, -2px 0 red; }
+  20% { transform: skew(3deg); opacity: 0.8; }
+  40% { transform: skew(-3deg); }
+  100% { transform: skew(0deg); text-shadow: -2px 0 cyan, 2px 0 red; }
+}
+
+@keyframes pulse-red {
+  from { opacity: 0.6; box-shadow: 0 0 5px #ff3333; }
+  to { opacity: 1; box-shadow: 0 0 20px #ff3333; }
+}
+
+/* Utilitários */
+.error-status { animation: blink 0.8s infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+
+/* Parte do bot de sistema*/
+
+.boot-sequence-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #00e5ff;
+  font-family: 'Orbitron', sans-serif;
+  flex-direction: column;
+}
+
+.boot-loader {
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+}
+
+.boot-bar-container {
+  width: 100%;
+  height: 2px;
+  background: rgba(0, 229, 255, 0.1);
+  margin: 20px 0;
+  position: relative;
+  overflow: visible;
+}
+
+.boot-bar-fill {
+  height: 100%;
   background: #00e5ff;
-  color: #000;
-  box-shadow: 0 0 25px rgba(0, 229, 255, 0.7);
+  box-shadow: 0 0 15px #00e5ff, 0 0 30px rgba(0, 229, 255, 0.5);
+  transition: width 0.1s ease-out;
 }
 
+.boot-glow {
+  position: absolute;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  background: #00e5ff;
+  filter: blur(10px);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  transition: left 0.1s ease-out;
+}
+
+.boot-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.boot-logs {
+  margin-top: 30px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: rgba(0, 229, 255, 0.6);
+  text-align: left;
+  line-height: 1.6;
+}
+
+.boot-logs .success {
+  color: #fff;
+  text-shadow: 0 0 5px #00e5ff;
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.boot-sequence-overlay {
+  animation: fadeIn 0.3s ease-in;
+}
+
+
+@media (min-width: 1024px) {
+  .hud-container-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr 300px;
+    height: 100%;
+  }
+}
+
+.noise-overlay { position: absolute; inset: 0; opacity: 0.03; pointer-events: none; background-image: repeating-radial-gradient(#000 0 0.0001%, #fff 0 0.0002%); }
+.scanline-overlay { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 50%, rgba(255, 0, 0, 0.08) 50%); background-size: 100% 4px; animation: scanline-move 10s linear infinite; }
+.animated-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255, 51, 51, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 51, 51, 0.05) 1px, transparent 1px); background-size: 45px 45px; transform: perspective(600px) rotateX(60deg); opacity: 0.2; }
+
+@keyframes scanline-move { to { background-position: 0 100%; } }
+
+
+.initiate-reboot { width: 100%; background: transparent; border: 1px solid #ff3333; color: #ff3333; padding: 18px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; margin-top: 15px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: all 0.3s; }
+.initiate-reboot:hover { background: #ff3333; color: #fff; box-shadow: 0 0 30px #ff3333; }
+
+.boot-sequence-overlay { position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; justify-content: center; align-items: center; color: #00e5ff; flex-direction: column; }
+.boot-loader { width: 90%; max-width: 500px; }
+.boot-bar-fill { height: 100%; background: #00e5ff; box-shadow: 0 0 15px #00e5ff; transition: width 0.1s ease-out; }
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .hud-container-grid {
+    grid-template-columns: 250px 1fr 250px; /* Força 3 colunas no celular deitado */
+    gap: 10px;
+    height: 90vh;
+  }
+
+  .noise-overlay, .scanline-overlay, .static-overlay, .animated-grid {
+    display: none; /* Remove efeitos para melhorar performance em telas pequenas */
+  }
+
+  .hud-panel {
+    margin-bottom: 20px !important;
+    width: 100% !important;
+    min-height: auto !important;
+    transform: none !important;
+  }
+
+  .right { 
+    margin-bottom: 20px !important;
+    text-align: center !important;
+   }
+
+  .main-display-unit {
+    transform: scale(0.6); /* Encolhe o 404 para caber na altura baixa */
+  }
+
+  .target-reticle {
+    width: 220px !important;
+    height: 220px !important;
+  }
+
+  .hud-panel {
+    padding: 10px;
+    font-size: 0.6rem;
+  }
+
+  .panel-header {
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+  }
+
+  .initiate-reboot {
+    padding: 10px;
+    margin-top: 5px;
+  }
+}
+
+/* 4. MEDIA QUERY PARA DESKTOP */
+@media (min-width: 1024px) {
+  .hud-container-grid {
+    grid-template-columns: 300px 1fr 300px;
+    height: auto;
+  }
+}

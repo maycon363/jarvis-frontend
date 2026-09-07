@@ -1,277 +1,268 @@
-/* ===============================
-   OVERLAY + HOLOGRAMA
-================================ */
-
-.modal-overlay {
+/* Overlay e Blur */
+.stark-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 5, 10, 0.9);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
+  padding: 10px;
 }
 
-.hologram {
-  animation: hologramPulse 1.4s infinite alternate;
-}
-
-@keyframes hologramPulse {
-  0% { filter: drop-shadow(0 0 15px #00e5ff); }
-  100% { filter: drop-shadow(0 0 30px #00e5ff); }
-}
-
-/* ===============================
-   MODAL BASE
-================================ */
-
-.modal-content.developer-modal {
-  width: 92%;
-  max-width: 480px;
-  background: radial-gradient(circle at top, #030a1c, #000);
-  border: 2px solid #00e5ff;
-  border-radius: 16px;
-  padding: 28px;
-  color: #e5f6ff;
-  text-align: center;
-  box-shadow: 0 0 45px rgba(0, 229, 255, 0.25);
-  animation: devEnter 0.5s ease;
-}
-
-@keyframes devEnter {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.dev-header {
-    font-size: 2.4rem;
-    font-weight: 900;
-    color: transparent; /* oculta o texto base */
-    text-align: center;
-    position: relative;
-    margin-bottom: 16px;
-}
-
-.dev-header::before,
-.dev-header::after {
-  content: attr(data-text);
-  position: absolute;
-  top: 0;
-  left: 0;
+/* Container Principal - Estilo Placa de Metal/Holograma */
+.stark-modal-container {
+  position: relative;
   width: 100%;
-  text-align: center;
-  opacity: 0.7;
-  animation: glitch 2s infinite;
+  max-width: 420px;
+  max-height: 90vh; /* Nunca passa de 90% da altura da tela */
+  background: #020a16;
+  border: 1px solid #00d4ff;
+  display: flex;
+  flex-direction: column; /* Organiza header, corpo e footer */
+  padding: 20px;
+  clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%);
 }
 
-.dev-header::before {
-  color: #ff004c;
-  animation-delay: 0.2s;
+.stark-scroll-area {
+  flex: 1; /* Ocupa o espaço restante */
+  overflow-y: auto; /* Habilita o scroll do mouse */
+  padding-right: 10px;
+  margin: 15px 0;
 }
 
-.dev-header::after {
-  color: #00fff9;
-  animation-delay: 0.4s;
+/* Estilo da barra de scroll para parecer Jarvis */
+.stark-scroll-area::-webkit-scrollbar {
+  width: 4px;
 }
-
-@keyframes glitch {
-  0%   { clip-path: inset(0 0 90% 0); transform: translate(-1px); }
-  20%  { clip-path: inset(10% 0 80% 0); transform: translate(1px); }
-  40%  { clip-path: inset(20% 0 60% 0); transform: translate(-1px); }
-  60%  { clip-path: inset(30% 0 40% 0); transform: translate(1px); }
-  80%  { clip-path: inset(40% 0 20% 0); transform: translate(-1px); }
-  100% { clip-path: inset(50% 0 0 0); transform: translate(0); }
+.stark-scroll-area::-webkit-scrollbar-track {
+  background: rgba(0, 212, 255, 0.05);
 }
-
-/* ===============================
-   BADGE SYSTEM OWNER
-================================ */
-
-.badge {
-  display: inline-block;
-  background: #3aff8f;
-  color: #000;
-  font-size: 0.7rem;
-  font-weight: bold;
-  letter-spacing: 1px;
-  padding: 4px 12px;
-  border-radius: 12px;
-  margin-bottom: 14px;
-  animation: badgePulse 2s infinite alternate;
-}
-
-@keyframes badgePulse {
-  from { box-shadow: 0 0 8px #3aff8f; }
-  to   { box-shadow: 0 0 20px #3aff8f; }
-}
-
-
-.dev-identity {
-  margin-bottom: 20px;
-}
-
-.typewriter {
-  overflow: hidden;
-  border-right: 2px solid #00e5ff;
-  white-space: nowrap;
-  width: 0;
-  margin: 0 auto 6px;
-  font-size: 1.3rem;
-  color: #00e5ff;
-  animation: typing 2s steps(25, end) forwards,
-             blinkCursor 0.8s infinite;
-}
-
-@keyframes typing {
-  from { width: 0; }
-  to   { width: 16ch; }
-}
-
-@keyframes blinkCursor {
-  0%,100% { border-color: transparent; }
-  50% { border-color: #00e5ff; }
-}
-
-.dev-status {
-  font-size: 0.95rem;
-  color: #3aff8f;
-  letter-spacing: 1px;
-}
-
-/* ===============================
-   PAINÉIS
-================================ */
-
-.dev-panels section {
-  text-align: left;
-  border: 1px solid rgba(0, 229, 255, 0.35);
-  background: rgba(0, 229, 255, 0.06);
-  padding: 14px;
-  margin: 8px 0;
+.stark-scroll-area::-webkit-scrollbar-thumb {
+  background: #00d4ff;
   border-radius: 10px;
 }
 
-.dev-panels h4 {
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-  color: #00e5ff;
-  margin-bottom: 6px;
-}
-
-.dev-panels a {
-  color: #00e5ff;
-  text-decoration: none;
-}
-
-.dev-panels a:hover {
-  text-decoration: underline;
-}
-
-.dev-section-title {
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.stack-cards {
-  position: relative;
-  height: 140px;
-  margin: 20px 0;
-  display: flex;
-  justify-content: center; 
-  align-items: center;
-}
-
-.stack-card {
+/* Scanner Laser Horizontal */
+.stark-scanner-line {
   position: absolute;
-  width: 140px;
-  height: 100px;
-  background: linear-gradient(145deg, #04152d, #000);
-  border: 1px solid rgba(0, 229, 255, 0.55);
-  border-radius: 12px;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 15px #00d4ff;
+  animation: scanVertical 4s infinite linear;
+  z-index: 5;
+}
+
+@keyframes scanVertical {
+  0% { top: 0; opacity: 0; }
+  50% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* Header */
+.stark-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+  padding-bottom: 10px;
+}
+
+.status-indicator {
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  color: #00d4ff;
+}
+
+.blink-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: #00ff40;
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: blink 1s infinite;
+}
+
+/* Identidade */
+.stark-identity { text-align: left; margin-bottom: 30px; }
+
+.user-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.4rem;
+  color: #fff;
+  margin: 5px 0;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.access-level { font-size: 0.7rem; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+.access-level span { color: #3aff8f; }
+
+/* Grid de Painéis */
+.stark-grid-panels { display: flex; flex-direction: column; gap: 20px; }
+
+.panel h3 {
+  font-size: 0.7rem;
+  color: #00d4ff;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+.description-box p {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.7);
+  background: rgba(0, 212, 255, 0.05);
+  padding: 10px;
+  border-left: 3px solid #00d4ff;
+}
+
+/* Grid de Skills - CORRIGIDO */
+.stark-stack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.stark-skill-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  padding: 15px 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 8px;
+  transition: 0.3s;
+}
+
+.stark-skill-card:hover {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: #00d4ff;
+  transform: translateY(-3px);
+}
+
+.skill-icon { font-size: 1.8rem; }
+.skill-name { font-size: 0.6rem; font-weight: bold; color: #fff; }
+
+/* Footer e Botões */
+.stark-modal-footer {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.dev-links-area {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;  
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 6px;
-  color: #00e5ff;
-  cursor: pointer;
-  transition: transform 0.4s ease, opacity 0.4s ease;
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.25);
-  left: 50%; 
-  transform: translateX(-50%);
+
 }
 
-.stack-icon {
-  font-size: 2rem;
-}
-
-.stack-card span {
+.database-link {
+  
+  text-align: center;
+  color: #00d4ff;
   font-size: 0.75rem;
-  letter-spacing: 1px;
+  text-decoration: none;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  padding: 10px;
+  transition: 0.3s;
 }
 
-.position-0 {
-  transform: translateX(-50%) scale(1);
-  z-index: 3;
-}
+.database-link:hover { background: rgba(0, 212, 255, 0.1); }
 
-.position-1 {
-  transform: translateX(-50%) translateY(12px) scale(0.95);
-  opacity: 0.8;
-  z-index: 2;
-}
-
-.position-2 {
-  transform: translateX(-50%) translateY(24px) scale(0.9);
-  opacity: 0.6;
-  z-index: 1;
-}
-
-.position-0:hover {
-  transform: translateX(-50%) scale(1.05);
-  box-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
-}
-
-.modal-close {
-  margin-top: 16px;
-  background: transparent;
-  border: 1px solid #00e5ff;
-  color: #00e5ff;
-  padding: 10px 26px;
-  border-radius: 24px;
+.stark-close-btn {
+  background: #ff004c;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
 }
 
-.modal-close:hover {
-  background: #00e5ff;
-  color: #000;
-  box-shadow: 0 0 25px rgba(0, 229, 255, 0.7);
+@keyframes blink { 50% { opacity: 0; } }
+
+
+@media (max-width: 480px) {
+  .stark-modal-container {
+    padding: 15px;
+  }
+  
+  .user-name {
+    font-size: 1.1rem;
+  }
+
+  .stark-stack-grid {
+    grid-template-columns: repeat(2, 1fr); /* No celular vira 2 colunas */
+  }
+
+  .stark-skill-card {
+    padding: 10px 5px;
+  }
 }
 
-.dev-links h4, a {
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
+/* Cabeçalho Fixo */
+.stark-modal-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+  padding-bottom: 10px;
 }
 
-.dev-links h4 {
-    font-size: 1.8rem;
+/* Rodapé Fixo */
+.stark-modal-footer {
+  flex-shrink: 0;
+  padding-top: 10px;
 }
 
+/* Container de Telemetria Geral */
+.hud-telemetry {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* DESTAQUE DA HORA */
+.time-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  border-left: 2px solid #00d4ff;
+  padding-left: 10px;
+}
+
+.time-display .label {
+  font-size: 0.55rem;
+  letter-spacing: 3px;
+  color: rgba(0, 212, 255, 0.6);
+  margin-bottom: 2px;
+}
+
+.time-value {
+  font-family: 'Orbitron', sans-serif; /* Fonte futurista */
+  font-size: 1.8rem; /* Bem maior */
+  font-weight: 900;
+  color: #00d4ff;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.7), 0 0 5px rgba(255, 255, 255, 0.5);
+  letter-spacing: 2px;
+}
+
+/* Mantendo o azul padrão para outros itens */
+.blue-text {
+  color: #00d4ff;
+  text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+}
+
+/* Ajuste para telas menores */
 @media (max-width: 768px) {
-  .dev-header {
-    font-size: 1.5rem;
+  .time-value {
+    font-size: 1.4rem;
   }
 }
