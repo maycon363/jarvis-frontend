@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "../style/supportmodal.css";
 import { FcCustomerSupport } from "react-icons/fc";
 import axios from "axios";
+import { IoIosCloseCircleOutline } from "react-icons/io";
 
 interface SupportModalProps {
   onClose: () => void;
@@ -59,7 +60,7 @@ const SupportModal: React.FC<SupportModalProps> = ({ onClose }) => {
             <FcCustomerSupport size={30} /> Suporte
           </h2>
           <button className="support-close-btn" onClick={onClose}>
-            ✕
+            <IoIosCloseCircleOutline />
           </button>
         </div>
 

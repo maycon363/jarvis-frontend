@@ -161,21 +161,13 @@
 }
 
 .config-close-btn {
-    background: #ff0606;
-    color: rgb(255, 255, 255);
-    padding: 8px;
-    font-size: 1.3rem;
+    color: rgb(8, 8, 8);
+    padding: 5px;
+    font-size: 1.6rem;
     cursor: pointer;
-    border-radius: 8px;
-    transition: 0.2s;
-    border: none;
+    border-radius: 15px;
 }
 
-.config-close-btn:hover {
-  background: #00eaff;
-  color: #000;
-  font-size: 1.6rem;
-}
 
 .chat-block-clear {
     margin-bottom: 20px;

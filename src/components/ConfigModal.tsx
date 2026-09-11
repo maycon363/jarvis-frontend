@@ -2,6 +2,7 @@ import React from 'react';
 import '../style/configmodel.css';
 import Swal from 'sweetalert2';
 import { FaRegTrashAlt } from 'react-icons/fa';
+import { IoIosCloseCircleOutline } from 'react-icons/io';
 
 interface ConfigModalProps {
   onClose:            () => void;
@@ -63,12 +64,12 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
 
         <div className="config-header">
           <h2 className="config-title">Configurações do Sistema</h2>
-          <button className="config-close-btn" onClick={onClose}>✕</button>
+          <button className="config-close-btn" onClick={onClose}><IoIosCloseCircleOutline /></button>
         </div>
 
         <div className="config-body">
 
-          <h3>Visual — Iron Man</h3>
+          <h3>Modelos Visuais</h3>
 
           <div className="config-block">
             <p>Modo de exibição</p>

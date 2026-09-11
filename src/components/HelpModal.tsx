@@ -1,8 +1,10 @@
 import React from 'react';
-import { FcAssistant } from "react-icons/fc";
+import { FcAssistant, FcMenu } from "react-icons/fc";
 import { FcHighPriority } from "react-icons/fc";
 import { FcServices } from "react-icons/fc";
-import { FcReading, FcAnswers, FcAlarmClock  } from "react-icons/fc";
+import { FcReading, FcAlarmClock  } from "react-icons/fc";
+import { IoIosCloseCircleOutline } from "react-icons/io";
+import { FcDatabase } from "react-icons/fc";
 
 type ModalType = 'Configurações' | 'Perfil' | 'Ajuda' | null;
 interface MenuProps {
@@ -19,7 +21,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <header className="modal-header">
           <h2 className="modal-title">Assistência de Ajuda (J.A.R.V.I.S.)</h2>
-          <button className="config-close-btn" onClick={onClose} aria-label="Fechar Modal">✕</button>
+          <button className="config-close-btn" onClick={onClose} aria-label="Fechar Modal"><IoIosCloseCircleOutline size={30}/></button>
         </header>
 
         <section className="modal-body">
@@ -36,7 +38,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
             <ul>
               <li><strong>Voz (Whisper V3):</strong> Clique no microfone para ativar a entrada de voz. Processamento rápido e preciso.</li>
               <li><strong>Texto:</strong> Digite na caixa e pressione 'Enter' ou 'Enviar'.</li>
-              <li><strong>Acesso:</strong> Use o menu ☰ para Configurações ou Ajuda.</li>
+              <li><strong>Acesso:</strong> Use o menu <FcMenu  /> para Configurações ou Ajuda.</li>
             </ul>
           </article>
 
@@ -57,7 +59,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
           </article>
 
           <article className="help-card">
-            <h3><FcAnswers size={28}/>Gerenciamento de Dados</h3>
+            <h3><FcDatabase size={28}/>Gerenciamento de Dados</h3>
             <p>O botão "Apagar Conversa" limpa a interface e reseta o contexto.</p>
           </article>
 

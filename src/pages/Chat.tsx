@@ -12,10 +12,13 @@ const BACKEND_URL =
     ? 'http://localhost:3001'
     : 'https://jarvis-backend-2-4kkb.onrender.com';
 
+// ─── Chaves de armazenamento local ─────────────────────────────────────────────
+// Tudo fica salvo no navegador de cada usuário — sem banco de dados no servidor.
 const STORAGE_MESSAGES     = 'jarvis_messages';
 const STORAGE_COMPROMISSOS = 'jarvis_compromissos';
-const HISTORICO_MAX        = 20; 
+const HISTORICO_MAX        = 20; // quantas mensagens recentes mandamos pro backend a cada request
 
+// ─── AudioContext singleton ───────────────────────────────────────────────────
 let sharedAudioContext: AudioContext | null = null;
 function getAudioContext(): AudioContext {
   if (!sharedAudioContext || sharedAudioContext.state === 'closed') {
@@ -142,6 +145,7 @@ function playClear() {
   } catch {}
 }
 
+// ─── Converte base64 → Blob URL (mais confiável que data URI para áudio longo) ─
 function base64ToObjectUrl(base64: string, mimeType = 'audio/mpeg'): string {
   const binary = atob(base64);
   const bytes  = new Uint8Array(binary.length);
@@ -149,6 +153,8 @@ function base64ToObjectUrl(base64: string, mimeType = 'audio/mpeg'): string {
   const blob = new Blob([bytes], { type: mimeType });
   return URL.createObjectURL(blob);
 }
+
+// ─── Tipos ────────────────────────────────────────────────────────────────────
 
 interface Message {
   sender:    'user' | 'jarvis';
@@ -188,6 +194,8 @@ interface ChatResponse {
   novoCompromisso?: Compromisso | null;
 }
 
+// ─── Helpers de localStorage ───────────────────────────────────────────────────
+
 function loadMessages(): Message[] {
   try {
     const raw = localStorage.getItem(STORAGE_MESSAGES);
@@ -208,6 +216,8 @@ function loadCompromissos(): Compromisso[] {
   }
 }
 
+// ─── Componente ───────────────────────────────────────────────────────────────
+
 export default function Chat({
   toggleMenu,
   isMenuOpen,
@@ -216,9 +226,12 @@ export default function Chat({
   bloomIntensity,
   clearChatRef,
 }: ChatProps) {
+  // Inicializa direto do localStorage — é isso que faz o JARVIS "lembrar"
+  // do usuário instantaneamente ao recarregar a página, sem chamar o backend.
   const [messages,     setMessages]     = useState<Message[]>(loadMessages);
   const [compromissos, setCompromissos] = useState<Compromisso[]>(loadCompromissos);
   const [input,        setInput]        = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [recognizing,  setRecognizing]  = useState(false);
   const [speaking,     setSpeaking]     = useState(false);
   const [loading,      setLoading]      = useState(false);
@@ -232,6 +245,7 @@ export default function Chat({
   const audioChunksRef   = useRef<BlobPart[]>([]);
   const audioAnalyzerRef = useRef<{ analyzer: AnalyserNode; dataArray: Uint8Array } | null>(null);
   const currentAudioRef  = useRef<HTMLAudioElement | null>(null);
+  // Guarda a object URL atual para revogar depois (evita memory leak)
   const currentBlobUrlRef = useRef<string | null>(null);
 
   const [sessionId] = useState(() => {
@@ -242,6 +256,7 @@ export default function Chat({
     return newId;
   });
 
+  // ─── Persiste mensagens e compromissos no localStorage sempre que mudam ─────
   useEffect(() => {
     try { localStorage.setItem(STORAGE_MESSAGES, JSON.stringify(messages)); } catch {}
   }, [messages]);
@@ -258,12 +273,14 @@ export default function Chat({
     return () => window.removeEventListener('click', handler);
   }, [started]);
 
+  // ─── Parar áudio ────────────────────────────────────────────────────────────
   const stopCurrentAudio = useCallback(() => {
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.src = '';
       currentAudioRef.current = null;
     }
+    // Libera a object URL da memória
     if (currentBlobUrlRef.current) {
       URL.revokeObjectURL(currentBlobUrlRef.current);
       currentBlobUrlRef.current = null;
@@ -273,6 +290,7 @@ export default function Chat({
     audioAnalyzerRef.current = null;
   }, []);
 
+  // ─── Tocar áudio em base64 vindo do backend (Piper gera .wav) ────────────────
   const playAudio = useCallback((audioBase64: string) => {
     stopCurrentAudio();
 
@@ -291,6 +309,7 @@ export default function Chat({
     audio.src    = blobUrl;
     currentAudioRef.current = audio;
 
+    // Conecta o analyzer ao AudioContext para visualizações
     let analyzerConnected = false;
     const connectAnalyzer = () => {
       if (analyzerConnected) return;
@@ -323,6 +342,7 @@ export default function Chat({
       setSphereStatus('idle');
       audioAnalyzerRef.current = null;
       currentAudioRef.current  = null;
+      // Revoga a blob URL após o áudio terminar
       URL.revokeObjectURL(blobUrl);
       currentBlobUrlRef.current = null;
     };
@@ -337,6 +357,7 @@ export default function Chat({
       currentBlobUrlRef.current = null;
     };
 
+    // Aguarda o browser ter dados suficientes antes de dar play
     audio.addEventListener('canplaythrough', () => {
       audio.play().catch((err) => {
         console.error('Play bloqueado:', err);
@@ -345,15 +366,20 @@ export default function Chat({
       });
     }, { once: true });
 
+    // Força o load
     audio.load();
   }, [stopCurrentAudio]);
 
+  // ─── Enviar mensagem ─────────────────────────────────────────────────────────
   const sendAndProcessMessage = useCallback(async (userMessage: string) => {
     const trimmed = userMessage.trim();
     if (!trimmed) return;
 
     playUISend();
 
+    // Monta o histórico recente ({role, content}) a partir do que já está
+    // salvo localmente — é isso que vai pro backend a cada requisição,
+    // já que não existe mais banco de dados do lado do servidor.
     const historicoParaEnviar = messages
       .slice(-HISTORICO_MAX)
       .map(m => ({
@@ -395,6 +421,7 @@ export default function Chat({
       playUIReceive();
       setMessages(p => [...p, { sender: 'jarvis', text: textoFinal, timestamp: new Date() }]);
 
+      // Se o JARVIS registrou um novo compromisso, salva no localStorage
       if (novoCompromisso) {
         setCompromissos(prev => [...prev, novoCompromisso]);
       }
@@ -422,9 +449,11 @@ export default function Chat({
     if (!input.trim() || speaking || loading) return;
     const msg = input.trim();
     setInput('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
     sendAndProcessMessage(msg);
   }, [input, speaking, loading, sendAndProcessMessage]);
 
+  // ─── Gravação de voz ─────────────────────────────────────────────────────────
   const stopRecording = useCallback(() => {
     recorderRef.current?.stop();
     recorderRef.current?.stream.getTracks().forEach(t => t.stop());
@@ -469,6 +498,9 @@ export default function Chat({
     }
   }, [speaking, loading, recognizing, stopRecording, sendAndProcessMessage]);
 
+  // ─── Limpar chat ─────────────────────────────────────────────────────────────
+  // Limpa só a conversa (mensagens); os compromissos salvos continuam,
+  // já que fazem parte da "agenda" do usuário e não do histórico de bate-papo.
   const clearChat = useCallback(() => {
     stopCurrentAudio();
     playClear();
@@ -554,14 +586,25 @@ export default function Chat({
 
           <div className="input-area">
             <div className="input-wrapper">
-              <input
-                type="text"
+              <textarea
+                ref={textareaRef}
                 value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                onChange={e => {
+                  setInput(e.target.value);
+                  const el = e.target;
+                  el.style.height = 'auto';
+                  el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
                 placeholder={isBusy ? 'Aguarde...' : 'Fale com o JARVIS...'}
                 disabled={isBusy}
                 maxLength={500}
+                rows={1}
                 aria-label="Mensagem"
               />
               <button

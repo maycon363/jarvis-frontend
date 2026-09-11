@@ -127,3 +127,70 @@
   border-top: 0.5px solid rgba(0, 242, 255, 0.1);
   padding-top: 8px;
 }
+
+/* ── Responsivo: telas estreitas (celular) ─────────────────────────────
+   Sem isso, os painéis de 150px mínimo somados sobravam quase nada pro
+   centro, e o rodapé (3 textos numa linha só) quebrava no meio da palavra. */
+@media (max-width: 700px) {
+  .jarvis-hud-container {
+    padding: 0.6rem;
+    gap: 6px;
+  }
+
+  .hud-panel {
+    min-width: 0;
+    flex: 1 1 40%;
+    padding: 6px 8px;
+  }
+
+  .hud-row {
+    font-size: 9px;
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+  .hud-row span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hud-center {
+    order: -1;      /* data/hora primeiro, painéis embaixo — mais legível */
+    flex: 1 1 100%;
+  }
+
+  .hud-date {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-align: center;
+  }
+  .hud-time {
+    font-size: clamp(22px, 7vw, 32px);
+    letter-spacing: 3px;
+  }
+
+  .hud-badges {
+    justify-content: center;
+  }
+  .badge {
+    font-size: 8px;
+    padding: 2px 6px;
+  }
+
+  .hud-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hud-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 8px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .hud-panel { flex: 1 1 100%; }
+  .hud-time  { font-size: clamp(20px, 8vw, 26px); letter-spacing: 2px; }
+}

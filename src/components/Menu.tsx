@@ -39,7 +39,7 @@ const Menu: React.FC<MenuProps> = ({ isOpen,  onSelectOption }) => {
         </li>
       </ul>
       <div className="menu-footer">
-        <p>V 1.1.8 - Acesso Autorizado!!</p>
+        <p>V 2.0.0</p>
       </div>
     </div>
   );

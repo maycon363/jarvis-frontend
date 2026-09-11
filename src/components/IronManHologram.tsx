@@ -1,322 +1,530 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { AdaptiveDpr, AdaptiveEvents, PerformanceMonitor } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { AdaptiveDpr, AdaptiveEvents, PerformanceMonitor, Environment, Lightformer } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { isWebGLAvailable, WebGLUnavailableFallback } from './webglSupport';
 
 interface Props {
-  speaking:        boolean;
-  recognizing:     boolean;
-  error:           boolean;
-  isDevOpen?:      boolean;
+  speaking: boolean;
+  recognizing: boolean;
+  error: boolean;
+  isDevOpen?: boolean;
   bloomIntensity?: number;
 }
 
 const STATE_COLOR = {
-  idle:      new THREE.Color(0x22d3ee), // ciano
-  listening: new THREE.Color(0x4488ff), // azul
-  speaking:  new THREE.Color(0x00ff88), // verde
-  error:     new THREE.Color(0xff3322), // vermelho
-  dev:       new THREE.Color(0xffffff), // branco
+  idle: new THREE.Color(0x2f6fe0),       // azul metálico
+  listening: new THREE.Color(0x19d3ff),  // ciano
+  speaking: new THREE.Color(0xff4a2e),   // vermelho-alaranjado (Ultron)
+  error: new THREE.Color(0xff3b30),      // vermelho
+  dev: new THREE.Color(0xffb347),        // âmbar
 } as const;
 
-const PARTICLE_COUNT_DESKTOP = 30000;
-const PARTICLE_COUNT_MOBILE  = 11000;
+const DESKTOP_VOXELS = 950;
+const MOBILE_VOXELS = 420;
 
-const NECK_HEIGHT_FRACTION = 0;
-
-const TARGET_WORLD_SIZE = 34;
-
-let _dotTexture: THREE.Texture | null = null;
-function getDotTexture(): THREE.Texture {
-  if (_dotTexture) return _dotTexture;
-  const size = 64;
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = size;
-  const ctx = canvas.getContext('2d')!;
-  const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  gradient.addColorStop(0,    'rgba(255,255,255,1)');
-  gradient.addColorStop(0.35, 'rgba(255,255,255,0.7)');
-  gradient.addColorStop(1,    'rgba(255,255,255,0)');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, size, size);
-  _dotTexture = new THREE.CanvasTexture(canvas);
-  _dotTexture.needsUpdate = true;
-  return _dotTexture;
+interface CubeNode {
+  position: THREE.Vector3;
+  size: number;
+  phase: number;
+  depth: number;
+  accent: number;
+  hue: number; // 0 = frio (azul), 1 = quente (vermelho/laranja) — fixo por cubo
 }
 
-interface HeadData {
-  particlePositions: Float32Array; // pontos soltos (glow atmosférico)
-  wireframePositions: Float32Array; // pares de pontos das arestas (estrutura)
-  center: THREE.Vector3;            // centro da região da cabeça (espaço local do .glb)
-  scale: number;                    // fator pra normalizar a cabeça pro tamanho-alvo de mundo
-  minY: number;                     // topo/base da região (espaço local), pra animar a linha de varredura
-  maxY: number;
-  maxDim: number;                   // maior dimensão local, pra dimensionar a linha de varredura
-}
+/**
+ * UNIVERSO DE CUBOS
+ *
+ * Não é uma esfera e não é um cérebro anatômico.
+ * É um "ambiente de memória" tridimensional:
+ * - blocos grandes perto do núcleo;
+ * - cubos pequenos e metalico (cor metalica) espalhados em profundidade;
+ * - regiões mais densas que lembram clusters de memória igual entre o filme do jarvis e ultron em
+ * vingadores ultron;
+ * - espaços vazios para a câmera conseguir atravessar o universo.
+ */
+function createCubeUniverse(count: number): CubeNode[] {
+  const nodes: CubeNode[] = [];
 
-function trimMeshAboveY(mesh: THREE.Mesh, cutoffY: number): Float32Array | null {
-  const geo = mesh.geometry;
-  const posAttr = geo.attributes.position;
-  const index = geo.index;
-  mesh.updateWorldMatrix(true, false);
+  for (let i = 0; i < count; i++) {
+    const depth = Math.random();
 
-  const vA = new THREE.Vector3(), vB = new THREE.Vector3(), vC = new THREE.Vector3();
-  const kept: number[] = [];
+    // Mantém um eixo de passagem no centro para a câmera mergulhar.
+    const corridor = Math.random() < 0.72;
 
-  const push = (ia: number, ib: number, ic: number) => {
-    vA.fromBufferAttribute(posAttr, ia).applyMatrix4(mesh.matrixWorld);
-    vB.fromBufferAttribute(posAttr, ib).applyMatrix4(mesh.matrixWorld);
-    vC.fromBufferAttribute(posAttr, ic).applyMatrix4(mesh.matrixWorld);
-    if (vA.y >= cutoffY && vB.y >= cutoffY && vC.y >= cutoffY) {
-      kept.push(vA.x, vA.y, vA.z, vB.x, vB.y, vB.z, vC.x, vC.y, vC.z);
+    let x: number;
+    let y: number;
+    let z: number;
+
+    if (corridor) {
+      // Várias "camadas" como blocos de uma memória digital.
+      const layer = Math.floor(Math.random() * 12);
+      const layerZ = (layer - 5.5) * 1.15;
+
+      const spread = 3.4 + depth * 7.0;
+
+      x = (Math.random() - 0.5) * spread * 2.2;
+      y = (Math.random() - 0.5) * spread * 1.45;
+      z = layerZ + (Math.random() - 0.5) * 1.3;
+    } else {
+      // Cubos isolados fora da estrutura principal.
+      const theta = Math.random() * Math.PI * 2;
+      const radius = 5 + Math.random() * 10;
+
+      x = Math.cos(theta) * radius;
+      y = Math.sin(theta) * radius * 0.62;
+      z = (Math.random() - 0.5) * 22;
     }
-  };
 
-  if (index) {
-    for (let i = 0; i < index.count; i += 3) {
-      push(index.getX(i), index.getX(i + 1), index.getX(i + 2));
+    // Evita excesso de cubos exatamente no túnel central.
+    if (Math.abs(x) < 1.15 && Math.abs(y) < 1.0) {
+      x += (Math.random() < 0.5 ? -1 : 1) * (1.25 + Math.random() * 1.6);
+      y += (Math.random() - 0.5) * 1.4;
     }
-  } else {
-    for (let i = 0; i < posAttr.count; i += 3) {
-      push(i, i + 1, i + 2);
-    }
+
+    // Pequena irregularidade para fugir da aparência de grade.
+    x += Math.sin(i * 2.17) * 0.09;
+    y += Math.cos(i * 1.71) * 0.07;
+    z += Math.sin(i * 0.93) * 0.13;
+
+    nodes.push({
+      position: new THREE.Vector3(x, y, z),
+      size: 0.14 + Math.pow(Math.random(), 1.8) * 0.62,
+      phase: Math.random() * Math.PI * 2,
+      depth,
+      accent: Math.random(),
+      hue: Math.random(),
+    });
   }
 
-  return kept.length > 0 ? new Float32Array(kept) : null;
+  return nodes;
 }
 
-function extractHeadData(gltfScene: THREE.Object3D, particleCount: number): HeadData | null {
-  const meshes: THREE.Mesh[] = [];
-  gltfScene.traverse((child: any) => {
-    if (child.isMesh && child.geometry?.attributes?.position?.count > 0) meshes.push(child);
-  });
-  if (meshes.length === 0) return null;
+// Cor "quente" (vermelho/laranja, tipo o núcleo do Ultron) e "fria" (azul
+// metálico) — cada cubo nasce fixo num dos dois lados, criando o contraste
+// que aparece na cena de referência, em vez de tudo virar cinza neutro.
+const COLD_METAL = new THREE.Color(0x2a5fc4);
+const WARM_METAL = new THREE.Color(0xc23a18);
 
-  const fullBox = new THREE.Box3().setFromObject(gltfScene);
-  const cutoffY = fullBox.min.y + NECK_HEIGHT_FRACTION * (fullBox.max.y - fullBox.min.y);
-
-  const headMeshes = meshes.filter(m => {
-    const b = new THREE.Box3().setFromObject(m);
-    const meshCenterY = (b.min.y + b.max.y) / 2;
-    return meshCenterY >= cutoffY;
-  });
-  if (headMeshes.length === 0) return null;
-
-  const trimmedTriangleSets: Float32Array[] = [];
-  headMeshes.forEach(mesh => {
-    const trimmed = trimMeshAboveY(mesh, cutoffY);
-    if (trimmed) trimmedTriangleSets.push(trimmed);
-  });
-  if (trimmedTriangleSets.length === 0) return null;
-
-  const edgesGeoms: THREE.BufferGeometry[] = trimmedTriangleSets.map(tris => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(tris, 3));
-    return new THREE.EdgesGeometry(geo, 20);
-  });
-  const mergedEdges = mergeGeometries(edgesGeoms, false);
-  if (!mergedEdges) {
-    throw new Error('mergeGeometries falhou — provavelmente as malhas têm atributos de vértice incompatíveis entre si.');
-  }
-  const wireframePositions = (mergedEdges.getAttribute('position') as THREE.BufferAttribute).array as Float32Array;
-
-  const vertsPerSet = trimmedTriangleSets.map(t => t.length / 3);
-  const totalVerts = vertsPerSet.reduce((a, b) => a + b, 0);
-  const particlePositions = new Float32Array(particleCount * 3);
-  let written = 0;
-  const headBox = new THREE.Box3();
-  const p = new THREE.Vector3();
-
-  trimmedTriangleSets.forEach((tris, i) => {
-    const vertCount = vertsPerSet[i];
-    const share = i === trimmedTriangleSets.length - 1
-      ? particleCount - written
-      : Math.min(particleCount - written, Math.round((vertCount / totalVerts) * particleCount));
-    for (let s = 0; s < share && written < particleCount; s++, written++) {
-      const idx = Math.floor(Math.random() * vertCount);
-      const x = tris[idx * 3], y = tris[idx * 3 + 1], z = tris[idx * 3 + 2];
-      particlePositions[written * 3]     = x;
-      particlePositions[written * 3 + 1] = y;
-      particlePositions[written * 3 + 2] = z;
-      p.set(x, y, z);
-      headBox.expandByPoint(p);
-    }
-  });
-
-  for (let i = 0; i < wireframePositions.length; i += 3) {
-    headBox.expandByPoint(new THREE.Vector3(wireframePositions[i], wireframePositions[i + 1], wireframePositions[i + 2]));
-  }
-
-  const size = headBox.getSize(new THREE.Vector3());
-  const maxDim = Math.max(size.x, size.y, size.z) || 1;
-  const scale = TARGET_WORLD_SIZE / maxDim;
-  const center = headBox.getCenter(new THREE.Vector3());
-
-  return {
-    particlePositions, wireframePositions, center, scale,
-    minY: headBox.min.y, maxY: headBox.max.y, maxDim,
-  };
-}
-
-function StatusOverlay({ lines }: { lines: string[] }) {
-  return (
-    <div
-      style={{
-        position: 'absolute', top: 8, left: 8, zIndex: 20,
-        background: 'rgba(0,0,0,0.75)', color: '#00eaff', fontFamily: 'monospace',
-        fontSize: 12, padding: '8px 10px', borderRadius: 6, maxWidth: '90%',
-        whiteSpace: 'pre-wrap', pointerEvents: 'none',
-      }}
-    >
-      {lines.map((l, i) => <div key={i}>{l}</div>)}
-    </div>
-  );
-}
-
-function HologramScene({
-  data, speaking, recognizing, error, isDevOpen,
+function CubeUniverse({
+  nodes,
+  speaking,
+  recognizing,
+  error,
+  isDevOpen,
 }: {
-  data:        HeadData;
-  speaking:    boolean;
+  nodes: CubeNode[];
+  speaking: boolean;
   recognizing: boolean;
-  error:       boolean;
-  isDevOpen:   boolean;
+  error: boolean;
+  isDevOpen: boolean;
 }) {
-  const pointsMatRef = useRef<THREE.PointsMaterial>(null);
-  const lineMatRef   = useRef<THREE.LineBasicMaterial>(null);
-  const groupRef     = useRef<THREE.Group>(null);
+  const groupRef = useRef<THREE.Group>(null);
+  const primaryRef = useRef<THREE.InstancedMesh>(null);
+  const accentRef = useRef<THREE.InstancedMesh>(null);
 
-  const { finalPositions, startPositions } = useMemo(() => {
-    const final = data.particlePositions;
-    const start = new Float32Array(final.length);
-    const dir = new THREE.Vector3();
-    const scatterRadius = data.maxDim * 0.9;
-    for (let i = 0; i < final.length; i += 3) {
-      dir.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
-      if (dir.lengthSq() < 0.0001) dir.set(1, 0, 0);
-      dir.normalize().multiplyScalar(scatterRadius * (0.4 + Math.random() * 0.9));
-      start[i]     = final[i]     + dir.x;
-      start[i + 1] = final[i + 1] + dir.y;
-      start[i + 2] = final[i + 2] + dir.z;
+  const baseColor = useRef(STATE_COLOR.idle.clone());
+
+  const primaryMaterial = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        metalness: 0.92,
+        roughness: 0.22,
+        transparent: true,
+        opacity: 0.97,
+        envMapIntensity: 3.4,
+        vertexColors: true,
+      }),
+    [],
+  );
+
+  const accentMaterial = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        metalness: 0.97,
+        roughness: 0.15,
+        transparent: true,
+        opacity: 0.88,
+        emissive: 0x0a0604,
+        emissiveIntensity: 1.1,
+        envMapIntensity: 4.2,
+        vertexColors: true,
+      }),
+    [],
+  );
+
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const tempColor = useMemo(() => new THREE.Color(), []);
+
+  useEffect(() => {
+    return () => {
+      primaryMaterial.dispose();
+      accentMaterial.dispose();
+    };
+  }, [primaryMaterial, accentMaterial]);
+
+  useEffect(() => {
+    if (!primaryRef.current || !accentRef.current) return;
+
+    // Cor inicial das instâncias — agora dividida entre metal frio (azul)
+    // e metal quente (vermelho/laranja), em vez de cinza neutro puro.
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      const metal = new THREE.Color();
+
+      const base = node.hue > 0.5 ? WARM_METAL : COLD_METAL;
+      const value = 0.5 + node.depth * 0.35;
+      metal.copy(base).multiplyScalar(value * 2.1);
+
+      // Alguns cubos ficam quase prata puro, pra variar o brilho.
+      if (node.accent > 0.9) {
+        metal.setRGB(0.62, 0.66, 0.72);
+      }
+
+      primaryRef.current.setColorAt(i, metal);
+
+      tempColor
+        .copy(baseColor.current)
+        .lerp(new THREE.Color(0xffffff), 0.46 + node.depth * 0.2);
+
+      accentRef.current.setColorAt(i, tempColor);
     }
-    return { finalPositions: final, startPositions: start };
-  }, [data.particlePositions, data.maxDim]);
 
-  const pointsGeometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(startPositions.slice(), 3));
-    const count = finalPositions.length / 3;
-    const colors = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const b = 0.55 + Math.random() * 0.45;
-      colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = b;
-    }
-    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    geo.computeBoundingSphere();
-    return geo;
-  }, [startPositions, finalPositions]);
-
-  const lineGeometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(data.wireframePositions, 3));
-    geo.computeBoundingSphere();
-    return geo;
-  }, [data.wireframePositions]);
-
-  const introStartRef = useRef<number | null>(null);
-  const ASSEMBLE_DURATION = 1.6; 
-  const WIREFRAME_DELAY   = 0.9; 
-  const WIREFRAME_FADE_IN = 0.9;
+    primaryRef.current.instanceColor!.needsUpdate = true;
+    accentRef.current.instanceColor!.needsUpdate = true;
+  }, [nodes, tempColor]);
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
-    if (introStartRef.current === null) introStartRef.current = t;
-    const introElapsed = t - introStartRef.current;
 
-    const assembleRaw  = Math.min(introElapsed / ASSEMBLE_DURATION, 1);
-    const assembleEase = 1 - Math.pow(1 - assembleRaw, 3); // ease-out cúbico
-
-    const wireframeRaw  = Math.min(Math.max(introElapsed - WIREFRAME_DELAY, 0) / WIREFRAME_FADE_IN, 1);
-    const wireframeEase = wireframeRaw * wireframeRaw * (3 - 2 * wireframeRaw); // smoothstep
-    const targetColor = isDevOpen
+    const target = isDevOpen
       ? STATE_COLOR.dev
       : error
-      ? STATE_COLOR.error
-      : speaking
-      ? STATE_COLOR.speaking
-      : recognizing
-      ? STATE_COLOR.listening
-      : STATE_COLOR.idle;
+        ? STATE_COLOR.error
+        : speaking
+          ? STATE_COLOR.speaking
+          : recognizing
+            ? STATE_COLOR.listening
+            : STATE_COLOR.idle;
 
-    if (assembleRaw < 1) {
-      const posAttr = pointsGeometry.attributes.position as THREE.BufferAttribute;
-      const arr = posAttr.array as Float32Array;
-      for (let i = 0; i < arr.length; i++) {
-        arr[i] = startPositions[i] + (finalPositions[i] - startPositions[i]) * assembleEase;
-      }
-      posAttr.needsUpdate = true;
-    }
+    baseColor.current.lerp(target, 0.055);
 
-    if (pointsMatRef.current) {
-      pointsMatRef.current.color.lerp(targetColor, 0.05);
-      const pulse = speaking ? 1.4 : recognizing ? 1.0 : 0.6;
-      const base = 0.45 + Math.sin(t * pulse) * 0.15;
-      pointsMatRef.current.opacity = base * assembleEase;
-    }
-    if (lineMatRef.current) {
-      lineMatRef.current.color.lerp(targetColor, 0.05);
-      const pulse = speaking ? 2.2 : recognizing ? 1.6 : 1.0;
-      const base = 0.55 + Math.sin(t * pulse) * 0.2;
-      lineMatRef.current.opacity = base * wireframeEase;
-    }
     if (groupRef.current) {
-      if (speaking) {
-        groupRef.current.rotation.y = Math.sin(t * 3.2) * THREE.MathUtils.degToRad(8);
-      } else {
-        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, 0, 0.08);
-      }
-      groupRef.current.rotation.x = 0;
-      groupRef.current.rotation.z = 0;
-      groupRef.current.scale.setScalar(data.scale);
+      const driftStrength = speaking ? 0.18 : recognizing ? 0.11 : 0.055;
+
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(
+        groupRef.current.rotation.y,
+        Math.sin(t * 0.11) * driftStrength,
+        0.025,
+      );
+
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(
+        groupRef.current.rotation.x,
+        Math.sin(t * 0.08) * driftStrength * 0.45,
+        0.025,
+      );
+
+      const universePulse = speaking
+        ? 1 + Math.sin(t * 5.6) * 0.012
+        : recognizing
+          ? 1 + Math.sin(t * 3.2) * 0.008
+          : 1;
+
+      groupRef.current.scale.setScalar(universePulse);
     }
+
+    if (!primaryRef.current || !accentRef.current) return;
+
+    const motion = speaking ? 0.22 : recognizing ? 0.10 : 0.035;
+    const accentStrength = speaking ? 0.92 : recognizing ? 0.72 : 0.38;
+
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+
+      const wave =
+        Math.sin(
+          t * (speaking ? 3.6 : recognizing ? 2.3 : 0.75) +
+            node.phase +
+            node.depth * 7,
+        );
+
+      const breathe = 1 + wave * (speaking ? 0.105 : recognizing ? 0.065 : 0.028);
+
+      dummy.position.set(
+        node.position.x + Math.sin(t * 0.26 + node.phase) * motion * 0.10,
+        node.position.y + Math.cos(t * 0.22 + node.phase) * motion * 0.07,
+        node.position.z + Math.sin(t * 0.31 + node.phase) * motion * 0.16,
+      );
+
+      dummy.rotation.set(
+        Math.sin(t * 0.13 + node.phase) * 0.10,
+        Math.cos(t * 0.16 + node.phase) * 0.11,
+        Math.sin(t * 0.10 + node.phase) * 0.08,
+      );
+
+      dummy.scale.setScalar(node.size * breathe);
+      dummy.updateMatrix();
+
+      primaryRef.current.setMatrixAt(i, dummy.matrix);
+
+      // Segunda camada extremamente discreta para dar "painéis" / detalhe metálico.
+      const accentScale =
+        node.size * (0.48 + node.depth * 0.22) *
+        (1 + wave * 0.06);
+
+      dummy.scale.setScalar(accentScale);
+      dummy.updateMatrix();
+
+      accentRef.current.setMatrixAt(i, dummy.matrix);
+
+      // A cor percorre o universo durante fala/processamento.
+      const colorMix =
+        0.18 +
+        Math.max(0, wave) * accentStrength * 0.70 +
+        node.depth * 0.18;
+
+      tempColor.copy(baseColor.current).lerp(
+        new THREE.Color(0xffffff),
+        THREE.MathUtils.clamp(colorMix, 0.12, 0.82),
+      );
+
+      accentRef.current.setColorAt(i, tempColor);
+
+      // Metal principal: base fria/quente fixa por cubo (node.hue),
+      // levemente modulada pela onda de movimento.
+      const metalBase = node.hue > 0.5 ? WARM_METAL : COLD_METAL;
+      const metalLight = 0.5 + node.depth * 0.36 + Math.max(0, wave) * 0.16;
+
+      tempColor.copy(metalBase).multiplyScalar(metalLight * 2.1);
+
+      // Pontos selecionados recebem influência forte da cor da resposta.
+      if (node.accent > 0.84) {
+        tempColor.lerp(baseColor.current, 0.4 + Math.max(0, wave) * 0.35);
+      }
+
+      primaryRef.current.setColorAt(i, tempColor);
+    }
+
+    primaryRef.current.instanceMatrix.needsUpdate = true;
+    accentRef.current.instanceMatrix.needsUpdate = true;
+    primaryRef.current.instanceColor!.needsUpdate = true;
+    accentRef.current.instanceColor!.needsUpdate = true;
+
+    accentMaterial.emissive.copy(baseColor.current).multiplyScalar(0.07);
+    accentMaterial.emissiveIntensity =
+      speaking ? 2.1 : recognizing ? 1.7 : error ? 2.4 : 1.15;
   });
 
   return (
-    <group
-      ref={groupRef}
-      position={[-data.center.x * data.scale, -data.center.y * data.scale, -data.center.z * data.scale]}
-      scale={data.scale}
-    >
-      <lineSegments geometry={lineGeometry}>
-        <lineBasicMaterial
-          ref={lineMatRef}
-          color={STATE_COLOR.idle}
-          transparent
-          opacity={0.75}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </lineSegments>
+    <group ref={groupRef}>
+      <instancedMesh
+        ref={primaryRef}
+        args={[undefined, undefined, nodes.length]}
+        frustumCulled={false}
+      >
+        <boxGeometry args={[1, 1, 1]} />
+        <primitive object={primaryMaterial} attach="material" />
+      </instancedMesh>
 
-      <points frustumCulled={false} geometry={pointsGeometry}>
-        <pointsMaterial
-          ref={pointsMatRef}
-          color={STATE_COLOR.idle}
-          map={getDotTexture()}
-          vertexColors
-          size={2}
-          sizeAttenuation={false}
-          transparent
-          opacity={0.5}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </points>
+      <instancedMesh
+        ref={accentRef}
+        args={[undefined, undefined, nodes.length]}
+        frustumCulled={false}
+      >
+        <boxGeometry args={[1, 1, 1]} />
+        <primitive object={accentMaterial} attach="material" />
+      </instancedMesh>
     </group>
+  );
+}
+
+/**
+ * Câmera = sensação de "mergulhar na memória".
+ *
+ * Idle: visão ampla.
+ * Listening: aproxima um pouco.
+ * Speaking: entra no universo e passa pelos cubos.
+ * Error: aproxima rapidamente e recua.
+ */
+function MemoryDiveCamera({
+  speaking,
+  recognizing,
+  error,
+}: {
+  speaking: boolean;
+  recognizing: boolean;
+  error: boolean;
+}) {
+  const { camera } = useThree();
+  const target = useRef(new THREE.Vector3());
+
+  // Progresso do "mergulho" dentro do corredor de cubos — enquanto fala,
+  // isso avança de verdade (a câmera atravessa o campo), em vez de só
+  // aproximar e ficar parada numa distância fixa.
+  const travel = useRef(0); // 0 = fora do corredor, 1 = atravessou tudo
+  const TRAVEL_RANGE_Z = 20; // de z=24 (fora) até z=4 (bem dentro dos cubos)
+
+  useFrame(({ clock }, delta) => {
+    const t = clock.elapsedTime;
+
+    // Avança enquanto fala; recua suavemente quando para.
+    const travelSpeed = speaking ? 0.09 : -0.05;
+    travel.current = THREE.MathUtils.clamp(travel.current + travelSpeed * delta * 4, 0, 1);
+
+    // Enquanto ainda está "dentro" do mergulho (travel > 0), oscila pra
+    // frente e pra trás dentro do corredor em vez de avançar só numa
+    // direção — dá a sensação de estar navegando entre os blocos, não
+    // atravessando uma vez e saindo do outro lado.
+    const weavePhase = Math.sin(t * (speaking ? 0.55 : 0.3)) * 0.5 + 0.5;
+    const effectiveTravel = travel.current * (0.4 + weavePhase * 0.6);
+
+    let targetZ = 24 - effectiveTravel * TRAVEL_RANGE_Z;
+
+    if (recognizing && !speaking) targetZ = Math.min(targetZ, 18.5);
+    if (error) targetZ = 15.0;
+
+    const lateralAmp = speaking ? 3.2 : recognizing ? 1.4 : 0.35;
+    const verticalAmp = speaking ? 1.7 : recognizing ? 0.6 : 0.18;
+
+    target.current.set(
+      Math.sin(t * 0.24) * lateralAmp + Math.sin(t * 0.7) * (speaking ? 0.8 : 0),
+      Math.cos(t * 0.2) * verticalAmp,
+      targetZ,
+    );
+
+    const travelLerp = speaking ? 0.05 : recognizing ? 0.035 : 0.02;
+
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, target.current.x, travelLerp);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, target.current.y, travelLerp);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, target.current.z, speaking ? 0.028 : 0.05);
+
+    // Olha um pouco à frente do movimento, como se estivesse "navegando"
+    // e não só girando no lugar.
+    const lookTarget = new THREE.Vector3(
+      Math.sin(t * 0.19) * (speaking ? 1.4 : 0.4),
+      Math.cos(t * 0.16) * (speaking ? 0.8 : 0.22),
+      camera.position.z - (speaking ? 9 : 4),
+    );
+
+    camera.lookAt(lookTarget);
+  });
+
+  return null;
+}
+
+function UniverseLights({
+  speaking,
+  recognizing,
+  error,
+}: {
+  speaking: boolean;
+  recognizing: boolean;
+  error: boolean;
+}) {
+  const color = error
+    ? '#f51408'
+    : speaking
+      ? '#ff5a34'
+      : recognizing
+        ? '#19d3ff'
+        : '#4da6ff';
+
+  return (
+    <>
+      <ambientLight intensity={0.16} />
+
+      <directionalLight
+        position={[7, 9, 12]}
+        intensity={0.9}
+        color="#dbeafe"
+      />
+
+      {/* Várias fontes quentes/frias espalhadas ao redor (não só uma de
+         cada lado oposto) — evita a "linha" nítida onde uma cor domina e
+         a outra some. Decay mais suave pra elas se misturarem no meio. */}
+      <pointLight position={[-9, 3, 10]}  intensity={speaking ? 85 : recognizing ? 68 : 54} distance={44} decay={1.3} color="#ff5a2e" />
+      <pointLight position={[9, -2, -4]}  intensity={recognizing ? 74 : 56} distance={44} decay={1.3} color="#2f6fe0" />
+      <pointLight position={[8, 6, -8]}   intensity={speaking ? 62 : 44} distance={40} decay={1.3} color="#ff3b1a" />
+      <pointLight position={[-8, -5, 6]}  intensity={recognizing ? 62 : 44} distance={40} decay={1.3} color="#19d3ff" />
+      <pointLight position={[0, 8, 4]}    intensity={36} distance={36} decay={1.3} color="#ff6a3c" />
+      <pointLight position={[0, -8, -2]}  intensity={36} distance={36} decay={1.3} color="#2f6fe0" />
+
+      <pointLight
+        position={[-2, -7, -12]}
+        intensity={speaking ? 24 : 14}
+        distance={24}
+        decay={2}
+        color={color}
+      />
+    </>
+  );
+}
+
+// Ambiente de estúdio: sem isso, material com metalness alto fica escuro
+// (metal só reflete o ambiente — sem HDRI/lightformer pra refletir, não
+// existe "brilho" possível, só a luz direta das point lights, que nunca é
+// suficiente sozinha). Painéis quentes e frios, como janelas de uma cidade
+// à noite refletindo nos cubos — é isso que dá o efeito "metal vivo".
+function StudioEnvironment() {
+  return (
+    <Environment resolution={192}>
+      <Lightformer intensity={9}   color="#ff6a3c" position={[-6, 3, 6]}   scale={[7, 5, 1]} rotation={[0, Math.PI / 3, 0]} />
+      <Lightformer intensity={8}   color="#2f6fe0" position={[6, -2, 6]}   scale={[7, 5, 1]} rotation={[0, -Math.PI / 3, 0]} />
+      <Lightformer intensity={6}   color="#19d3ff" position={[0, 6, -6]}   scale={[9, 4, 1]} />
+      <Lightformer intensity={5}   color="#ff3b1a" position={[0, -6, -6]}  scale={[9, 4, 1]} />
+      <Lightformer intensity={5}   color="#ff6a3c" position={[6, 4, -6]}   scale={[6, 4, 1]} rotation={[0, -Math.PI / 4, 0]} />
+      <Lightformer intensity={5}   color="#2f6fe0" position={[-6, -4, -6]} scale={[6, 4, 1]} rotation={[0, Math.PI / 4, 0]} />
+      <Lightformer intensity={1}   color="#ffffff" position={[0, 0, 10]}   scale={[3, 3, 1]} />
+    </Environment>
+  );
+}
+
+function CognitiveUniverse({
+  speaking,
+  recognizing,
+  error,
+  isDevOpen,
+}: {
+  speaking: boolean;
+  recognizing: boolean;
+  error: boolean;
+  isDevOpen: boolean;
+}) {
+  const nodes = useMemo(
+    () =>
+      createCubeUniverse(
+        window.innerWidth <= 768 ? MOBILE_VOXELS : DESKTOP_VOXELS,
+      ),
+    [],
+  );
+
+  return (
+    <>
+      <UniverseLights
+        speaking={speaking}
+        recognizing={recognizing}
+        error={error}
+      />
+
+      <MemoryDiveCamera
+        speaking={speaking}
+        recognizing={recognizing}
+        error={error}
+      />
+
+      <CubeUniverse
+        nodes={nodes}
+        speaking={speaking}
+        recognizing={recognizing}
+        error={error}
+        isDevOpen={isDevOpen}
+      />
+
+      <StudioEnvironment />
+    </>
   );
 }
 
@@ -324,142 +532,143 @@ export function IronManHologram({
   speaking,
   recognizing,
   error,
-  isDevOpen      = false,
-  bloomIntensity = 0.9,
+  isDevOpen = false,
+  bloomIntensity = 1.6,
 }: Props) {
-  const [isMobile, setIsMobile]   = useState(window.innerWidth <= 768);
-  const [webglOk]                 = useState(() => isWebGLAvailable());
-  const [data, setData]           = useState<HeadData | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [status, setStatus]       = useState<string[]>(['Iniciando holograma…']);
-  const [dpr, setDpr]             = useState(isMobile ? 0.8 : 1);
+  const [isMobile, setIsMobile] = useState(
+    () => window.innerWidth <= 768,
+  );
+
+  const [webglOk] = useState(() => isWebGLAvailable());
+
+  const [dpr, setDpr] = useState(
+    () => (window.innerWidth <= 768 ? 0.8 : 1),
+  );
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+
+      setIsMobile(mobile);
+
+      setDpr(current =>
+        Math.min(current, mobile ? 1.15 : 1.35),
+      );
+    };
+
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
-  useEffect(() => {
-    if (!webglOk) return; 
-    let cancelled = false;
-    const glbPath = new URL('/assets/sci-fi_helmet.glb', import.meta.url).href;
-    const count = window.innerWidth <= 768 ? PARTICLE_COUNT_MOBILE : PARTICLE_COUNT_DESKTOP;
+  const handleCreated = useCallback(
+    ({ gl }: { gl: THREE.WebGLRenderer }) => {
+      gl.outputColorSpace = THREE.SRGBColorSpace;
+      gl.toneMapping = THREE.ACESFilmicToneMapping;
+      gl.toneMappingExposure = 1.16;
+      gl.setClearColor(0x020407, 0);
 
-    setStatus(s => [...s, `Carregando ${glbPath.split('/').pop()}…`]);
+      const canvas = gl.domElement;
 
-    new GLTFLoader().load(
-      glbPath,
-      (gltf) => {
-        if (cancelled) return;
-        setStatus(s => [...s, 'Arquivo .glb carregado com sucesso.']);
+      canvas.addEventListener(
+        'webglcontextlost',
+        event => {
+          event.preventDefault();
+          console.warn(
+            '[JARVIS Universe] Contexto WebGL perdido, tentando recuperar...',
+          );
+        },
+        false,
+      );
 
-        const extracted = extractHeadData(gltf.scene, count);
-        if (!extracted) {
-          setLoadError('Nenhuma malha encontrada acima do corte de pescoço — ajuste NECK_HEIGHT_FRACTION ou confira o eixo "para cima" do modelo.');
-          return;
-        }
+      canvas.addEventListener(
+        'webglcontextrestored',
+        () => {
+          console.info(
+            '[JARVIS Universe] Contexto WebGL recuperado.',
+          );
+        },
+        false,
+      );
+    },
+    [],
+  );
 
-        setStatus(s => [
-          ...s,
-          `${extracted.wireframePositions.length / 6} arestas de wireframe.`,
-          `${count} partículas de glow.`,
-          `Fator de escala aplicado: ${extracted.scale.toFixed(4)}x`,
-          'Holograma pronto ✓ (painel some em instantes)',
-        ]);
-        setData(extracted);
-      },
-      (progress) => {
-        if (cancelled) return;
-        const pct = progress.total ? Math.round((progress.loaded / progress.total) * 100) : null;
-        setStatus(s => {
-          const withoutProgress = s.filter(l => !l.startsWith('Progresso:'));
-          return [...withoutProgress, `Progresso: ${pct !== null ? pct + '%' : Math.round(progress.loaded / 1024) + ' KB'}`];
-        });
-      },
-      (err) => {
-        if (cancelled) return;
-        const msg = err instanceof ErrorEvent ? err.message : String(err);
-        setLoadError(msg);
-        setStatus(s => [...s, `ERRO AO CARREGAR: ${msg}`]);
-      }
-    );
-
-    return () => { cancelled = true; };
-  }, []);
-
-  const [overlayVisible, setOverlayVisible] = useState(true);
-  useEffect(() => {
-    if (data && !loadError) {
-      const timer = setTimeout(() => setOverlayVisible(false), 2500);
-      return () => clearTimeout(timer);
-    }
-  }, [data, loadError]);
-
-  const handleCreated = useCallback(({ gl }: { gl: THREE.WebGLRenderer }) => {
-    gl.outputColorSpace = THREE.SRGBColorSpace;
-    gl.setClearColor(0x0b0c10, 0);
-    const canvas = gl.domElement;
-    canvas.addEventListener('webglcontextlost', (e) => {
-      e.preventDefault();
-      console.warn('[IronManHologram] Contexto WebGL perdido, tentando recuperar...');
-    }, false);
-    canvas.addEventListener('webglcontextrestored', () => {
-      console.info('[IronManHologram] Contexto WebGL recuperado.');
-    }, false);
-  }, []);
-
-  const showOverlay = overlayVisible || !!loadError;
-
-  if (!webglOk) return <WebGLUnavailableFallback label="Holograma" />;
+  if (!webglOk) {
+    return <WebGLUnavailableFallback label="Universo de memória" />;
+  }
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      {showOverlay && (
-        <StatusOverlay lines={[...status, ...(loadError ? [`❌ ${loadError}`] : [])]} />
-      )}
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        background:
+          'radial-gradient(circle at center, rgba(9,17,28,0.85) 0%, rgba(2,4,7,0.7) 45%, rgba(0,0,0,0) 100%)',
+        // Esmaece o conteúdo renderizado (não só a cor de fundo) perto das
+        // bordas — sem isso, o retângulo do WebGL sempre fica com uma
+        // borda nítida, mesmo com o fundo transparente.
+        WebkitMaskImage:
+          'radial-gradient(ellipse at center, black 55%, transparent 96%)',
+        maskImage:
+          'radial-gradient(ellipse at center, black 55%, transparent 96%)',
+      }}
+    >
+      <Canvas
+        camera={{
+          position: [0, 0, 24],
+          fov: 48,
+          near: 0.1,
+          far: 100,
+        }}
+        dpr={dpr}
+        gl={{
+          antialias: false,
+          powerPreference: 'high-performance',
+          stencil: false,
+          depth: true,
+        }}
+        onCreated={handleCreated}
+      >
+        <PerformanceMonitor
+          onIncline={() =>
+            setDpr(d => Math.min(d + 0.10, isMobile ? 1.15 : 1.35))
+          }
+          onDecline={() =>
+            setDpr(d => Math.max(d - 0.10, 0.65))
+          }
+        />
 
-      {loadError ? (
-        <div style={{ color: '#ff3355', fontFamily: 'monospace', fontSize: 13, padding: 16 }}>
-          Não foi possível carregar o holograma: {loadError}
-        </div>
-      ) : (
-        <Canvas
-          camera={{ position: [0, 0, TARGET_WORLD_SIZE * 2.1], fov: 32 }}
-          dpr={dpr}
-          gl={{ antialias: false, powerPreference: 'high-performance', stencil: false }}
-          onCreated={handleCreated}
-        >
-          <PerformanceMonitor
-            onIncline={() => setDpr(d => Math.min(d + 0.25, isMobile ? 1.5 : 2))}
-            onDecline={() => setDpr(d => Math.max(d - 0.25, 0.75))}
-          />
-          <AdaptiveDpr pixelated />
-          <AdaptiveEvents />
+        <AdaptiveDpr pixelated />
+        <AdaptiveEvents />
 
-          {data && (
-            <HologramScene
-              data={data}
-              speaking={speaking}
-              recognizing={recognizing}
-              error={error}
-              isDevOpen={isDevOpen}
+        <CognitiveUniverse
+          speaking={speaking}
+          recognizing={recognizing}
+          error={error}
+          isDevOpen={isDevOpen}
+        />
+
+        {bloomIntensity > 0 && (
+          <EffectComposer enableNormalPass={false}>
+            <Bloom
+              intensity={
+                isMobile
+                  ? bloomIntensity * 0.55
+                  : bloomIntensity
+              }
+              luminanceThreshold={0.42}
+              luminanceSmoothing={0.82}
+              radius={0.68}
+              mipmapBlur={!isMobile}
             />
-          )}
-
-          {bloomIntensity > 0 && (
-            <EffectComposer enableNormalPass={false}>
-              <Bloom
-                intensity={isMobile ? bloomIntensity * 0.7 : bloomIntensity}
-                luminanceThreshold={0.05}
-                luminanceSmoothing={0.9}
-                radius={0.6}
-                mipmapBlur={!isMobile}
-              />
-            </EffectComposer>
-          )}
-        </Canvas>
-      )}
+          </EffectComposer>
+        )}
+      </Canvas>
     </div>
   );
 }

@@ -158,44 +158,96 @@ body {
 }
 
 .message {
+    position: relative;
     margin-bottom: 14px;
     max-width: 70%;
     line-height: 1.4;
     font-size: 1.1rem;
-    padding: 10px 15px;
-    border-radius: 8px;
+    padding: 12px 16px 12px 18px;
+    border-radius: 10px;
     word-break: break-word;
+    background: rgba(10, 20, 26, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid transparent;
     /* entra com fade+slide e depois flutua suavemente, sem parar */
     animation: slideUpFadeIn 0.4s ease forwards, floatMsg 4s ease-in-out infinite;
     animation-delay: 0s, 0.4s;
 }
 
-/* ── Mensagens transparentes: sem fundo, sem borda, sem sombra de caixa.
-   Só o texto com glow, dando a sensação de "flutuar" no ar. ── */
+/* Barra de acento na cor do remetente — como um indicador de canal de
+   transmissão, não uma borda decorativa qualquer */
+.message::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    border-radius: 2px;
+}
+
+/* Cantos de HUD nas mensagens do Jarvis — um único detalhe de "interface",
+   não repetido em excesso pra não virar clichê */
+.message.jarvis::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 12px;
+    width: 14px;
+    height: 6px;
+    border-left: 1px solid rgba(0, 255, 247, 0.5);
+    border-top: 1px solid rgba(0, 255, 247, 0.5);
+}
+
 .message.jarvis {
-    color: #00fff7;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    text-shadow: 0 0 6px rgba(0, 255, 247, 0.55), 0 0 16px rgba(0, 255, 247, 0.25);
+    color: #baffff;
+    border-color: rgba(0, 255, 247, 0.18);
+    box-shadow: 0 0 18px rgba(0, 255, 247, 0.06), inset 0 0 20px rgba(0, 255, 247, 0.03);
+    text-shadow: 0 0 6px rgba(0, 255, 247, 0.4);
     align-self: flex-start;
+    border-top-left-radius: 3px;
+}
+.message.jarvis::before {
+    left: 0;
+    background: linear-gradient(180deg, transparent, #00fff7, transparent);
+    box-shadow: 0 0 8px #00fff7;
 }
 
 .message.user {
-    color: #ff004f;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    text-shadow: 0 0 6px rgba(255, 0, 79, 0.55), 0 0 16px rgba(255, 0, 79, 0.25);
+    color: #ffc9d9;
+    border-color: rgba(255, 0, 79, 0.18);
+    box-shadow: 0 0 18px rgba(255, 0, 79, 0.06), inset 0 0 20px rgba(255, 0, 79, 0.03);
+    text-shadow: 0 0 6px rgba(255, 0, 79, 0.4);
     align-self: flex-end;
     text-align: right;
+    padding: 12px 18px 12px 16px;
+    border-top-right-radius: 3px;
+}
+.message.user::before {
+    right: 0;
+    background: linear-gradient(180deg, transparent, #ff004f, transparent);
+    box-shadow: 0 0 8px #ff004f;
 }
 
 .input-area {
     flex-shrink: 0;
     display: flex;
-    padding: 30px;
-    gap: 10px;
+    align-items: center;
+    margin: 0 20px 20px;
+    padding: 8px 8px 8px 20px;
+    gap: 8px;
+    position: relative;
+    background: rgba(14, 22, 28, 0.65);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(0, 255, 247, 0.22);
+    border-radius: 26px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.2) inset;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.input-area:focus-within {
+    border-color: rgba(0, 255, 247, 0.5);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.2) inset, 0 0 20px rgba(0, 255, 247, 0.12);
 }
 
 .input-wrapper {
@@ -207,55 +259,89 @@ body {
 
 .input-wrapper input {
   width: 100%;
-  padding: 14px 48px 14px 18px; 
+  padding: 8px 8px 8px 0;
 }
 
 .send-inside {
-    position: absolute;
-    right: 6px;
-    background: transparent;
+    position: static;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    background: rgba(0, 255, 247, 0.12);
     border: none;
-    color: #13b42e;
-    text-shadow: 0 0 30px #13b42e;
+    border-radius: 50%;
+    color: #00fff7;
+    text-shadow: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 6px;
-    border-color: #00c0d7;
     transition: all 0.2s ease;
 }
 
+.send-inside:hover:not(:disabled) {
+    background: #00fff7;
+    color: #001414;
+    transform: scale(1.06);
+    box-shadow: 0 0 14px rgba(0, 255, 247, 0.6);
+}
+
 .send-inside:disabled {
-    color: #ff004f;
-    opacity: 0.4;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.25);
+    opacity: 1;
     cursor: not-allowed;
 }
 
 input {
     flex: 1;
-    padding: 14px 18px;
-    background: #12151a;
-    border: 1px solid #00fff7;
-    border-radius: 8px;
-    color: #00fff7;
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    padding: 14px 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    color: #e8fdff;
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: color 0.2s ease;
     outline: none;
-    caret-color: #ff004f;
-    box-shadow: 0 0 4px #00fff7 inset;
+    caret-color: #00fff7;
+    box-shadow: none;
+}
+
+.input-wrapper textarea {
+    flex: 1;
+    width: 100%;
+    padding: 9px 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    color: #e8fdff;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    line-height: 1.4;
+    outline: none;
+    caret-color: #00fff7;
+    box-shadow: none;
+    resize: none;
+    overflow-y: auto;
+    max-height: 140px;
+}
+.input-wrapper textarea::placeholder {
+    color: rgba(232, 253, 255, 0.35);
+    font-style: normal;
+}
+.input-wrapper textarea::-webkit-scrollbar { width: 6px; }
+.input-wrapper textarea::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 247, 0.4);
+    border-radius: 3px;
 }
 
 input::placeholder {
-    color: #00fff7aa;
-    font-style: italic;
-}
-
-input:focus {
-    border-color: #ff004f;
-    box-shadow: 0 0 10px #ff004f inset, 0 0 10px #ff004f;
+    color: rgba(232, 253, 255, 0.35);
+    font-style: normal;
 }
 
 .bnt-envit {
@@ -278,19 +364,27 @@ input:focus {
 }
 
 .mic-button {
-    background: #00fff7;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.06);
     border: none;
     border-radius: 50%;
-    color: #000;
+    color: #cdefff;
     font-size: 1.2rem;
     cursor: pointer;
-    transition: background 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 0 10px #00fff7;
-    height: 50px;
-    width: 50px;
+    transition: all 0.2s ease;
+    box-shadow: none;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+.mic-button:hover {
+    background: rgba(0, 255, 247, 0.15);
+    color: #00fff7;
+}
+.mic-button:active {
+    transform: scale(0.94);
 }
 
 .bnt-envit:hover:not(:disabled) {
@@ -400,7 +494,13 @@ input:focus {
 }
 
 .mic-button.active {
-    background: #33ff00;
+    background: rgba(255, 0, 79, 0.18);
+    color: #ff5c8a;
+    animation: micPulse 1.4s ease-in-out infinite;
+}
+@keyframes micPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 79, 0.35); }
+    50%      { box-shadow: 0 0 0 6px rgba(255, 0, 79, 0); }
 }
 
 @keyframes fadeIn {
@@ -526,28 +626,21 @@ input:focus {
         max-width: 85%;
     }
     .input-area {
-        flex-direction: row;
-        align-items: center;
-        gap: 8px;
-        padding: 10px;
+        margin: 0 10px 10px;
+        padding: 6px 6px 6px 16px;
+        gap: 6px;
     }
-    input {
+    input,
+    .input-wrapper textarea {
         flex: 1;
         width: 100%;
         font-size: 1rem;
     }
-    button {
-        flex-shrink: 0;
-        padding: 14px 18px;
-        height: 45px;
-        width: auto;
-    }
+    .send-inside,
     .mic-button {
-        width: 50px;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
     }
 }
 
@@ -583,16 +676,19 @@ input:focus {
         padding: 6px 10px;
     }
     .input-area {
-        gap: 8px;
-        padding: 8px;
+        margin: 0 6px 8px;
+        padding: 5px 5px 5px 14px;
+        gap: 5px;
     }
     input,
-    button {
+    .input-wrapper textarea {
         font-size: 0.95rem;
-        padding: 12px;
+        padding: 10px 0;
     }
-    button {
-        padding: 12px 20px;
+    .send-inside,
+    .mic-button {
+        width: 32px;
+        height: 32px;
     }
 }
 
@@ -667,13 +763,16 @@ input:focus {
     }
     
     /* Ajustes específicos para os elementos de input no modo paisagem */
-    .input-area input {
+    .input-area input,
+    .input-area textarea {
         flex-grow: 1 !important; /* Ocupa o máximo possível */
         width: auto !important; /* Permite que o flex defina a largura */
         order: 1 !important; 
         padding: 8px 12px !important;
         font-size: 0.9rem !important;
         height: 40px !important;
+        max-height: 40px !important; /* paisagem é baixa — mantém 1 linha só aqui */
+        resize: none !important;
     }
 
     .input-area .bnt-envit.envit-button {
