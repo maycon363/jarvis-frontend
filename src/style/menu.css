@@ -4,13 +4,13 @@
     left: 0;
     width: 250px;
     height: 100vh;
-    background-color: #0b0c10;
-    color: #00fff7;
-    box-shadow: 2px 0 15px rgba(21, 22, 22, 0.7);
+    background-color: #020a16;
+    color: #00d4ff;
+    box-shadow: 2px 0 25px rgba(0, 212, 255, 0.12);
     padding: 20px;
     z-index: 15;
     transition: transform 0.3s ease-in-out;
-    border-right: 2px solid #00fff7;
+    border-right: 1px solid #00d4ff;
     transform: translateX(-100%);
     display: flex;
     flex-direction: column;
@@ -22,13 +22,15 @@
 }
 
 .menu-header h2 {
-    color: #00fff7;
+    font-family: 'Orbitron', sans-serif;
+    color: #fff;
     margin-top: 70px;
     margin-bottom: 10px;
-    text-shadow: 0 0 5px #00fff7;
-    text-decoration: underline #ff004f 2px;
-    text-underline-offset: 6px;
-    font-size: 1.5rem;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.35);
+    padding-bottom: 10px;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
     text-align: center;
 }
 
@@ -42,10 +44,11 @@
 .menu-list li {
     padding: 15px 10px;
     cursor: pointer;
-    font-size: 1.1rem;
-    transition: color 0.2s ease, text-shadow 0.2s ease, background-color 0.2s ease;
-    border-bottom: 1px solid rgba(0, 255, 247, 0.2);
-    border-radius: 5px;
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.2s ease, text-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+    border-left: 2px solid transparent;
 }
 
 .menu li svg {
@@ -55,18 +58,19 @@
 }
 
 .menu-list li:hover {
-    color: #ff004f;
-    text-shadow: 0 0 8px #ff004f;
-    background-color: rgba(255, 0, 79, 0.1);
+    color: #fff;
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.7);
+    background-color: rgba(0, 212, 255, 0.08);
+    border-left: 2px solid #00d4ff;
 }
 
 .menu-footer p {
-    font-size: 0.9rem;
-    color: #e0c1c1;
-    text-shadow: #00fff7 0 2 18px;
+    font-size: 0.85rem;
+    color: rgba(0, 212, 255, 0.5);
     text-align: center;
     padding-top: 10px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    border-top: 1px dashed rgba(0, 212, 255, 0.2);
+    letter-spacing: 1px;
 }
 
 .hamburger-button {
@@ -74,23 +78,23 @@
     top: 15px;
     left: 15px;
     z-index: 20;
-    background: #ff004f;
-    color: white;
+    background: #020a16;
+    color: #00d4ff;
     padding: 8px 12px;
     font-size: 1.3rem;
     line-height: 1;
-    border-radius: 5px;
     cursor: pointer;
-    box-shadow: 0 0 10px #ff004f;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.35);
     transition: transform 0.3s ease, background 0.2s;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 2px solid white;
+    border: 1px solid #00d4ff;
+    clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%, 0 15%);
 }
 
 .hamburger-button:hover {
-    background: #d80044;
+    background: rgba(0, 212, 255, 0.12);
     transform: scale(1.05);
 }
 

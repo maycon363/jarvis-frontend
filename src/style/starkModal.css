@@ -1,0 +1,298 @@
+/* src/style/starkModal.css
+   ------------------------------------------------------------------
+   Linguagem visual "HUD Stark" compartilhada pelos modais Sobre, Ajuda,
+   Suporte e Configurações — pensada pra combinar com o visual do
+   DeveloperModal sem depender dele: tudo aqui usa classes com prefixo
+   "jv-", então nada neste arquivo toca em DeveloperModal.tsx ou em
+   developerModal.css.
+   ------------------------------------------------------------------ */
+
+.jv-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 5, 10, 0.88);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 10px;
+  animation: jv-fade-in 0.25s ease-out;
+}
+
+.jv-panel {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  background: #020a16;
+  border: 1px solid #00d4ff;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%);
+  box-shadow: 0 0 35px rgba(0, 212, 255, 0.12);
+  animation: jv-scale-in 0.22s ease;
+}
+
+.jv-scanline {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 15px #00d4ff;
+  animation: jv-scan-vertical 4s infinite linear;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Cabeçalho: status "ONLINE" + título à esquerda, fechar à direita */
+.jv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-shrink: 0;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.25);
+  padding-bottom: 10px;
+}
+
+.jv-status {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  color: #00d4ff;
+  display: flex;
+  align-items: center;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.jv-blink-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: #00ff40;
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: jv-blink 1s infinite;
+}
+
+.jv-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.05rem;
+  color: #fff;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
+  margin: 0;
+}
+
+.jv-close-btn {
+  background: transparent;
+  border: none;
+  color: #00d4ff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: 0.2s;
+}
+.jv-close-btn:hover { color: #ff3b3b; transform: scale(1.1); }
+
+/* Corpo com scroll */
+.jv-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-bottom: 4px;
+}
+.jv-scroll::-webkit-scrollbar { width: 4px; }
+.jv-scroll::-webkit-scrollbar-track { background: rgba(0, 212, 255, 0.05); }
+.jv-scroll::-webkit-scrollbar-thumb { background: #00d4ff; border-radius: 10px; }
+
+.jv-intro {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(0, 212, 255, 0.05);
+  padding: 12px;
+  border-left: 3px solid #00d4ff;
+  margin-bottom: 18px;
+}
+.jv-intro strong { color: #00d4ff; }
+
+.jv-section { margin-bottom: 16px; }
+
+.jv-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #00d4ff;
+  margin: 0 0 10px 0;
+}
+
+.jv-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  transition: 0.25s;
+}
+.jv-card:hover { background: rgba(0, 212, 255, 0.08); border-color: #00d4ff; }
+.jv-card p, .jv-card li { font-size: 0.82rem; line-height: 1.5; color: rgba(255, 255, 255, 0.72); margin: 0; }
+.jv-card p + p { margin-top: 8px; }
+.jv-card ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.jv-card li::before { content: "▸ "; color: #00d4ff; }
+.jv-card strong { color: #fff; }
+
+.jv-pill-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.jv-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  padding: 12px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: 0.25s;
+  text-align: center;
+}
+.jv-pill:hover { background: rgba(0, 212, 255, 0.1); border-color: #00d4ff; transform: translateY(-2px); }
+.jv-pill-icon { font-size: 1.3rem; }
+.jv-pill-label { font-size: 0.62rem; font-weight: bold; color: #fff; }
+
+.jv-alert {
+  border: 1px solid #ff9d3b;
+  background: rgba(255, 157, 59, 0.08);
+  padding: 10px 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+.jv-alert strong { color: #ff9d3b; }
+.jv-alert svg { flex-shrink: 0; margin-top: 2px; }
+
+.jv-separator {
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+  margin: 16px 0;
+}
+
+/* Rodapé */
+.jv-footer {
+  flex-shrink: 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 212, 255, 0.15);
+}
+
+.jv-btn {
+  width: 100%;
+  background: transparent;
+  color: #00d4ff;
+  border: 1px solid #00d4ff;
+  padding: 11px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.jv-btn:hover { background: rgba(0, 212, 255, 0.12); }
+.jv-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.jv-btn-danger { color: #ff3b3b; border-color: #ff3b3b; }
+.jv-btn-danger:hover { background: rgba(255, 59, 59, 0.12); }
+
+/* Formulário (Suporte) */
+.jv-form { display: flex; flex-direction: column; gap: 10px; }
+.jv-form input, .jv-form textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  color: #fff;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.jv-form input::placeholder, .jv-form textarea::placeholder { color: rgba(255, 255, 255, 0.35); }
+.jv-form input:focus, .jv-form textarea:focus {
+  outline: none;
+  border-color: #00d4ff;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.25);
+}
+.jv-form textarea { resize: none; min-height: 90px; }
+
+.jv-form-status { font-size: 0.78rem; text-align: center; margin: 4px 0 0 0; }
+.jv-form-status.success { color: #3aff8f; }
+.jv-form-status.error { color: #ff3b3b; }
+.jv-form-status.loading { color: #ffce3b; }
+
+/* Toggles / seletores (Configurações) */
+.jv-toggle-group { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+@media (min-width: 380px) {
+  .jv-toggle-group { flex-direction: row; flex-wrap: wrap; }
+}
+.jv-toggle {
+  flex: 1;
+  min-width: 120px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 10px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: 0.2s;
+  text-align: center;
+}
+.jv-toggle.jv-toggle-on {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: #00d4ff;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
+}
+.jv-toggle:hover { border-color: #00d4ff; }
+
+.jv-hint { font-size: 0.68rem; color: rgba(255, 255, 255, 0.4); margin-top: 6px; display: block; }
+
+.jv-select {
+  width: 100%;
+  background: #020a16;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  color: #fff;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+}
+
+.jv-range { width: 100%; accent-color: #00d4ff; margin: 6px 0; }
+
+.jv-block { margin-bottom: 18px; }
+.jv-block > p:first-child { font-size: 0.8rem; color: rgba(255, 255, 255, 0.8); margin: 0 0 6px 0; }
+
+/* Animações */
+@keyframes jv-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes jv-scale-in { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes jv-scan-vertical { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+@keyframes jv-blink { 50% { opacity: 0; } }
+
+@media (max-width: 480px) {
+  .jv-panel { padding: 15px; }
+  .jv-pill-grid { grid-template-columns: repeat(2, 1fr); }
+  .jv-title { font-size: 0.95rem; }
+}

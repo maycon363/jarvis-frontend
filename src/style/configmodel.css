@@ -64,6 +64,8 @@
     letter-spacing: 1px;
 }
 
+
+
 .config-close-bt {
     background: transparent;
     border: none;
@@ -166,6 +168,17 @@
     font-size: 1.6rem;
     cursor: pointer;
     border-radius: 15px;
+}
+
+.bnt-config {
+    border: none;
+    color: #ff0033;
+    cursor: pointer;
+}
+
+.bnt-config:hover {
+    color: #ff3355;
+    transform: scale(1.1);
 }
 
 

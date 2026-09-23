@@ -12,6 +12,8 @@ import './style/notFound.css'
 import './style/developerModal.css'
 import './style/jarvishud.css'
 import './style/loading.css'
+import './style/developerModal.css'
+import './style/starkModal.css'
 
 // StrictMode foi removido de propósito: em desenvolvimento ele monta cada
 // componente duas vezes (mount → unmount → mount) para detectar efeitos

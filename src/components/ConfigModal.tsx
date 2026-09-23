@@ -1,13 +1,13 @@
 import React from 'react';
-import '../style/configmodel.css';
 import Swal from 'sweetalert2';
 import { FaRegTrashAlt } from 'react-icons/fa';
 import { IoIosCloseCircleOutline } from 'react-icons/io';
+import { FcServices } from 'react-icons/fc';
 
 interface ConfigModalProps {
   onClose:            () => void;
-  visualMode:         'model' | 'hologram' | 'orb';
-  setVisualMode:      (mode: 'model' | 'hologram' | 'orb') => void;
+  visualMode:         'model' | 'hologram' | 'orb' | 'humanoid';
+  setVisualMode:      (mode: 'model' | 'hologram' | 'orb' | 'humanoid') => void;
   currentEnvironment: string;
   setEnvironment:     (preset: string) => void;
   particleColor:      string;
@@ -46,106 +46,126 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
       text: 'O histórico será apagado permanentemente.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#00d4ff',
+      cancelButtonColor: '#ff3b3b',
       confirmButtonText: 'Sim, apagar!',
       cancelButtonText: 'Cancelar',
+      background: '#020a16',
+      color: '#fff',
     }).then(result => {
       if (result.isConfirmed) {
         clearChat();
-        Swal.fire({ title: 'Pronto!', text: 'Chat limpo com sucesso.', icon: 'success' });
+        Swal.fire({
+          title: 'Pronto!',
+          text: 'Chat limpo com sucesso.',
+          icon: 'success',
+          background: '#020a16',
+          color: '#fff',
+        });
       }
     });
   };
 
   return (
-    <div className="config-overlay" onClick={onClose}>
-      <div className="config-container" onClick={e => e.stopPropagation()}>
+    <div className="jv-overlay" onClick={onClose}>
+      <div className="jv-panel" onClick={e => e.stopPropagation()}>
+        <div className="jv-scanline" />
 
-        <div className="config-header">
-          <h2 className="config-title">Configurações do Sistema</h2>
-          <button className="config-close-btn" onClick={onClose}><IoIosCloseCircleOutline /></button>
-        </div>
-
-        <div className="config-body">
-
-          <h3>Modelos Visuais</h3>
-
-          <div className="config-block">
-            <p>Modo de exibição</p>
-            <div className="config-visual-mode-group">
-              <button
-                onClick={() => setVisualMode('model')}
-                className={`config-action-btn ${visualMode === 'model' ? 'btn-on' : 'btn-off'}`}
-              >
-                Modelo 3D
-              </button>
-              <button
-                onClick={() => setVisualMode('hologram')}
-                className={`config-action-btn ${visualMode === 'hologram' ? 'btn-on' : 'btn-off'}`}
-              >
-                Holograma (partículas)
-              </button>
-              <button
-                onClick={() => setVisualMode('orb')}
-                className={`config-action-btn ${visualMode === 'orb' ? 'btn-on' : 'btn-off'}`}
-              >
-                Esfera leve
-              </button>
-            </div>
-            <small style={{ color: '#888', fontSize: '11px' }}>
-              Holograma é o modo mais pesado visualmente; Esfera leve é o mais performático.
-            </small>
+        <header className="jv-header">
+          <div>
+            <span className="jv-status"><span className="jv-blink-dot" />ONLINE</span>
+            <h1 className="jv-title"><FcServices size={18} style={{ verticalAlign: 'middle', marginRight: 6 }} />CONFIGURAÇÕES</h1>
           </div>
+          <button className="jv-close-btn" onClick={onClose} aria-label="Fechar Modal">
+            <IoIosCloseCircleOutline size={26} />
+          </button>
+        </header>
 
-          {visualMode === 'model' && (
-            <div className="config-block">
-              <p>Ambiente de Iluminação (HDRI)</p>
-              <select
-                className="config-select-env"
-                value={currentEnvironment}
-                onChange={e => setEnvironment(e.target.value)}
-              >
-                {ENV_PRESETS.map(p => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
-                ))}
-              </select>
+        <div className="jv-scroll">
+          <section className="jv-section">
+            <h3 className="jv-section-title">Modelos Visuais</h3>
+
+            <div className="jv-block">
+              <p>Modo de exibição</p>
+              <div className="jv-toggle-group">
+                <button
+                  onClick={() => setVisualMode('model')}
+                  className={`jv-toggle ${visualMode === 'model' ? 'jv-toggle-on' : ''}`}
+                >
+                  Modelo 3D
+                </button>
+                <button
+                  onClick={() => setVisualMode('hologram')}
+                  className={`jv-toggle ${visualMode === 'hologram' ? 'jv-toggle-on' : ''}`}
+                >
+                  Universo de Cubos
+                </button>
+                <button
+                  onClick={() => setVisualMode('orb')}
+                  className={`jv-toggle ${visualMode === 'orb' ? 'jv-toggle-on' : ''}`}
+                >
+                  Esfera leve
+                </button>
+                <button
+                  onClick={() => setVisualMode('humanoid')}
+                  className={`jv-toggle ${visualMode === 'humanoid' ? 'jv-toggle-on' : ''}`}
+                >
+                  Humanoide
+                </button>
+              </div>
+              <span className="jv-hint">
+                Holograma é o modo mais pesado visualmente; Esfera leve é o mais performático.
+              </span>
             </div>
-          )}
 
-          {(visualMode === 'model' || visualMode === 'hologram' || visualMode === 'orb') && (
-            <div className="config-block">
+            {visualMode === 'model' && (
+              <div className="jv-block">
+                <p>Ambiente de Iluminação (HDRI)</p>
+                <select
+                  className="jv-select"
+                  value={currentEnvironment}
+                  onChange={e => setEnvironment(e.target.value)}
+                >
+                  {ENV_PRESETS.map(p => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="jv-block">
               <p>
                 Intensidade do Bloom:{' '}
-                <span style={{ color: '#00f2ff' }}>
+                <span style={{ color: '#00d4ff' }}>
                   {bloomIntensity === 0 ? 'Desativado' : bloomIntensity.toFixed(1)}
                 </span>
               </p>
               <input
                 type="range"
+                className="jv-range"
                 min={0}
                 max={2}
                 step={0.1}
                 value={bloomIntensity}
                 onChange={e => setBloomIntensity(Number(e.target.value))}
               />
-              <small style={{ color: '#888', fontSize: '11px' }}>
+              <span className="jv-hint">
                 0 = desativado · 0.5–0.8 recomendado · acima de 1.2 pesado em mobile
-              </small>
+              </span>
             </div>
-          )}
+          </section>
 
-          <div className="config-separator" />
+          <div className="jv-separator" />
 
-          <h3>Sistema</h3>
-
-          <div className="chat-block-clear">
-            <p>Limpar todo o histórico do chat:</p>
-            <button onClick={handleClearChat} className="chat-clear-btn">
-              <FaRegTrashAlt size={16} /> Limpar Conversa
-            </button>
-          </div>
-
+          <section className="jv-section">
+            <h3 className="jv-section-title">Sistema</h3>
+            <div className="jv-block">
+              <p>Limpar todo o histórico do chat:</p>
+              <button onClick={handleClearChat} className="jv-btn jv-btn-danger">
+                <FaRegTrashAlt size={14} /> LIMPAR CONVERSA
+              </button>
+            </div>
+          </section>
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { FcCustomerSupport } from "react-icons/fc";
 import { FcServices } from "react-icons/fc";
 import { FcDecision } from "react-icons/fc";
 import { FcCommandLine } from "react-icons/fc";
+import { FcAssistant } from "react-icons/fc";
 
 interface MenuProps {
   isOpen: boolean;
@@ -25,6 +26,9 @@ const Menu: React.FC<MenuProps> = ({ isOpen,  onSelectOption }) => {
         <h2>J.A.R.V.I.S. I.A.</h2>
       </div>
       <ul className="menu-list">
+        <li onClick={() => handleOptionClick('Sobre')}>
+          <FcAssistant size={22} />Sobre
+        </li>
         <li onClick={() => handleOptionClick('Ajuda')}>
           <FcDecision size={22} />Ajuda
         </li>
@@ -39,7 +43,7 @@ const Menu: React.FC<MenuProps> = ({ isOpen,  onSelectOption }) => {
         </li>
       </ul>
       <div className="menu-footer">
-        <p>V 2.0.0</p>
+        <p>V 2.1.1</p>
       </div>
     </div>
   );

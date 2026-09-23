@@ -1,2 +1,1 @@
-// src/types.ts
-export type ModalType = 'Ajuda' | 'Configurações' | 'Perfil' | 'Histórico' | 'Comandos' | 'Suporte' | 'Desenvolvedor';
+export type ModalType = 'Sobre' | 'Ajuda' | 'Configurações' | 'Perfil' | 'Histórico' | 'Comandos' | 'Suporte' | 'Desenvolvedor';

@@ -9,12 +9,13 @@ import ConfigModal from './components/ConfigModal';
 import SupportModal from './components/SupportModal';
 import { Routes, Route } from 'react-router-dom';
 import DeveloperModal from './components/DeveloperModal';
+import AboutModal from './components/AboutModal';
 
 function App() {
   const [loading, setLoading]               = useState(true);
   const [isMenuOpen, setIsMenuOpen]         = useState(false);
   const [openModal, setOpenModal]           = useState<ModalType | null>(null);
-  const [visualMode, setVisualMode]         = useState<'model' | 'hologram' | 'orb'>('model');
+  const [visualMode, setVisualMode]         = useState<'model' | 'hologram' | 'orb' | 'humanoid'>('model');
   const [environmentPreset, setEnvironmentPreset] = useState('night');
   const [particleColor, setParticleColor]   = useState('#2030B3');
   const [particleCount, setParticleCount]   = useState(6000);
@@ -42,6 +43,10 @@ function App() {
   }, []);
 
   let ActiveModal = null;
+
+  if (openModal === 'Sobre') {
+    ActiveModal = <AboutModal onClose={() => setOpenModal(null)} />;
+  }
 
   if (openModal === 'Ajuda') {
     ActiveModal = <HelpModal onClose={() => setOpenModal(null)} />;
@@ -120,7 +125,7 @@ function App() {
         toggleMenu={toggleMenu}
         onSelectOption={handleSelectOption}
         toggle3DModel={() => setVisualMode(prev =>
-          prev === 'model' ? 'hologram' : prev === 'hologram' ? 'orb' : 'model'
+          prev === 'model' ? 'hologram' : prev === 'hologram' ? 'orb' : prev === 'orb' ? 'humanoid' : 'model'
         )}
         onClearChat={() => clearChatRef.current?.()}
       />

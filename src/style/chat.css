@@ -36,6 +36,31 @@ body {
     text-size-adjust: 100%;
 }
 
+.hamburger-button {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 20;
+    background: #ff004f;
+    color: white;
+    padding: 8px 12px;
+    font-size: 1.5rem;
+    line-height: 1;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 0 10px #ff004f;
+    transition: transform 0.3s ease, background 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid white;
+}
+
+.hamburger-button:hover {
+    background: #d80044;
+    transform: scale(1.05);
+}
+
 .lite-placeholder {
     display: flex;
     flex-direction: column;

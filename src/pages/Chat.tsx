@@ -3,22 +3,22 @@ import axios from 'axios';
 import { IronManModel } from '../components/IronManModel';
 import { IronManHologram } from '../components/IronManHologram';
 import { v4 as uuidv4 } from 'uuid';
-import { FaMicrophone, FaStop, FaArrowAltCircleUp } from 'react-icons/fa';
+import { FaMicrophone, FaStop, FaArrowAltCircleUp, FaWindowClose } from 'react-icons/fa';
 import { JarvisHUD } from '../components/JarvisHUD';
 import { MetalOrb } from '../components/MetalOrb';
+import { TiThMenu } from 'react-icons/ti';
+import { ParticleHumanoid } from '../components/ParticleHumanoid';
+
 
 const BACKEND_URL =
   window.location.hostname === 'localhost'
     ? 'http://localhost:3001'
     : 'https://jarvis-backend-2-4kkb.onrender.com';
 
-// ─── Chaves de armazenamento local ─────────────────────────────────────────────
-// Tudo fica salvo no navegador de cada usuário — sem banco de dados no servidor.
 const STORAGE_MESSAGES     = 'jarvis_messages';
 const STORAGE_COMPROMISSOS = 'jarvis_compromissos';
 const HISTORICO_MAX        = 20; // quantas mensagens recentes mandamos pro backend a cada request
 
-// ─── AudioContext singleton ───────────────────────────────────────────────────
 let sharedAudioContext: AudioContext | null = null;
 function getAudioContext(): AudioContext {
   if (!sharedAudioContext || sharedAudioContext.state === 'closed') {
@@ -156,6 +156,8 @@ function base64ToObjectUrl(base64: string, mimeType = 'audio/mpeg'): string {
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
+type VisualMode = 'model' | 'hologram' | 'orb' | 'humanoid';
+
 interface Message {
   sender:    'user' | 'jarvis';
   text:      string;
@@ -175,7 +177,7 @@ interface Compromisso {
 interface ChatProps {
   toggleMenu:        () => void;
   isMenuOpen:        boolean;
-  visualMode:        'model' | 'hologram' | 'orb';
+  visualMode:        VisualMode;
   environmentPreset: string;
   particleColor?:    string;
   particleCount:     number;
@@ -223,6 +225,9 @@ export default function Chat({
   isMenuOpen,
   visualMode,
   environmentPreset,
+  particleColor,
+  particleCount,
+  particleSize,
   bloomIntensity,
   clearChatRef,
 }: ChatProps) {
@@ -521,12 +526,17 @@ export default function Chat({
   return (
     <div className="jarvis-container">
       <button onClick={toggleMenu} className="hamburger-button" aria-label="Menu">
-        {isMenuOpen ? '✕' : '☰'}
+        {isMenuOpen ? <FaWindowClose  size={28} /> : <TiThMenu  size={28} />}
       </button>
 
       <div className="layout-wrapper">
         <div className="model-side">
-          {visualMode === 'model' ? (
+          {/* Cada modo é tratado explicitamente por && — nada de ternário
+              encadeado. Assim, se um dia entrar um 5º modo e esse bloco
+              não for atualizado, ele simplesmente não renderiza nada
+              (fácil de notar), em vez de cair "sem querer" no modo errado. */}
+
+          {visualMode === 'model' && (
             <IronManModel
               speaking={speaking}
               environmentPreset={environmentPreset}
@@ -535,14 +545,18 @@ export default function Chat({
               recognizing={recognizing}
               bloomIntensity={bloomIntensity}
             />
-          ) : visualMode === 'hologram' ? (
+          )}
+
+          {visualMode === 'hologram' && (
             <IronManHologram
               speaking={speaking}
               recognizing={recognizing}
               error={armorError}
               bloomIntensity={bloomIntensity}
             />
-          ) : (
+          )}
+
+          {visualMode === 'orb' && (
             <div className="lite-placeholder">
               <MetalOrb
                 speaking={speaking}
@@ -551,6 +565,15 @@ export default function Chat({
                 bloomIntensity={bloomIntensity}
               />
             </div>
+          )}
+
+          {visualMode === 'humanoid' && (
+            <ParticleHumanoid
+              speaking={speaking}
+              recognizing={recognizing}
+              error={armorError}
+              particleCount={42000}
+            />
           )}
         </div>
 

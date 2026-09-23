@@ -608,14 +608,7 @@ export function IronManHologram({
         height: '100%',
         overflow: 'hidden',
         background:
-          'radial-gradient(circle at center, rgba(9,17,28,0.85) 0%, rgba(2,4,7,0.7) 45%, rgba(0,0,0,0) 100%)',
-        // Esmaece o conteúdo renderizado (não só a cor de fundo) perto das
-        // bordas — sem isso, o retângulo do WebGL sempre fica com uma
-        // borda nítida, mesmo com o fundo transparente.
-        WebkitMaskImage:
-          'radial-gradient(ellipse at center, black 55%, transparent 96%)',
-        maskImage:
-          'radial-gradient(ellipse at center, black 55%, transparent 96%)',
+          'radial-gradient(circle at center, #09111c 0%, #020407 58%, #000 100%)',
       }}
     >
       <Canvas
